@@ -1,0 +1,147 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import authService from "../../services/AuthService";
+import "../style.css";
+
+const TraceSheetsDashboard = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [stats, setStats] = useState({
+    totalDocuments: 892,
+    pendingReviews: 7,
+    completedAudits: 34,
+    complianceScore: 94
+  });
+
+  useEffect(() => {
+    // Check authentication
+    if (!authService.isAuthenticated()) {
+      navigate("/login");
+      return;
+    }
+
+    const currentUser = authService.getUser();
+    if (!currentUser || currentUser.department !== "TraceSheets") {
+      navigate("/login");
+      return;
+    }
+
+    setUser(currentUser);
+  }, [navigate]);
+
+  const handleLogout = () => {
+    authService.logout();
+    navigate("/");
+  };
+
+  if (!user) {
+    return (
+      <div className="dashboard-container">
+        <div className="loading">Loading...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="dashboard-container">
+      {/* Header */}
+      <header className="dashboard-header">
+        <div className="header-content">
+          <h1>Trace Sheets Department Dashboard</h1>
+          <div className="user-info">
+            <span>Welcome, {user.name}</span>
+            <button onClick={handleLogout} className="logout-btn">
+              Logout
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="dashboard-main">
+        {/* Quick Stats */}
+        <section className="stats-grid">
+          <div className="stat-card">
+            <h3>Total Documents</h3>
+            <p className="stat-number">{stats.totalDocuments}</p>
+            <span className="stat-change positive">+23 this week</span>
+          </div>
+          
+          <div className="stat-card">
+            <h3>Pending Reviews</h3>
+            <p className="stat-number">{stats.pendingReviews}</p>
+            <span className="stat-change neutral">3 urgent</span>
+          </div>
+          
+          <div className="stat-card">
+            <h3>Completed Audits</h3>
+            <p className="stat-number">{stats.completedAudits}</p>
+            <span className="stat-change positive">+5 this month</span>
+          </div>
+          
+          <div className="stat-card">
+            <h3>Compliance Score</h3>
+            <p className="stat-number">{stats.complianceScore}%</p>
+            <span className="stat-change positive">Excellent rating</span>
+          </div>
+        </section>
+
+        {/* Quick Actions */}
+        <section className="quick-actions">
+          <h2>Quick Actions</h2>
+          <div className="action-buttons">
+            <button className="action-btn primary">
+              <i className="fas fa-file-alt"></i>
+              Upload Document
+            </button>
+            <button className="action-btn secondary">
+              <i className="fas fa-search"></i>
+              Trace Document
+            </button>
+            <button className="action-btn secondary">
+              <i className="fas fa-clipboard-check"></i>
+              Conduct Audit
+            </button>
+            <button className="action-btn secondary">
+              <i className="fas fa-chart-line"></i>
+              Compliance Report
+            </button>
+          </div>
+        </section>
+
+        {/* Recent Activity */}
+        <section className="recent-activity">
+          <h2>Recent Activity</h2>
+          <div className="activity-list">
+            <div className="activity-item">
+              <i className="fas fa-file-upload activity-icon"></i>
+              <div className="activity-content">
+                <p>Document <strong>Quality_Control_Sheet_v2.3</strong> uploaded</p>
+                <span className="activity-time">30 minutes ago</span>
+              </div>
+            </div>
+            
+            <div className="activity-item">
+              <i className="fas fa-clipboard-check activity-icon success"></i>
+              <div className="activity-content">
+                <p>Audit <strong>Monthly Compliance Review</strong> completed successfully</p>
+                <span className="activity-time">2 hours ago</span>
+              </div>
+            </div>
+            
+            <div className="activity-item">
+              <i className="fas fa-search activity-icon"></i>
+              <div className="activity-content">
+                <p>Trace completed for <strong>Batch#QR2024-0156</strong></p>
+                <span className="activity-time">4 hours ago</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+};
+
+export default TraceSheetsDashboard;
+

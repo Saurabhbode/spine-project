@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Message Test</title>
+    <link rel="stylesheet" href="src/components/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background: #f5f7fa;
+        }
+        .test-section { 
+            margin-bottom: 30px; 
+            padding: 20px; 
+            background: white; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .message-test { margin-bottom: 20px; padding: 15px; border: 2px dashed #ccc; border-radius: 8px; }
+        .debug-info { 
+            background: #f8f9fa; 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 4px; 
+            font-family: monospace; 
+            font-size: 12px;
+        }
+        .css-check { 
+            background: #e7f3ff; 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 4px; 
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Comprehensive Message Color Debug</h1>
+    
+    <div class="test-section">
+        <h2>1. CSS Rule Verification</h2>
+        <div class="css-check">
+            <strong>Expected CSS Rules:</strong><br>
+            .success-message { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important; }<br>
+            .error-message { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important; }
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Message Tests (Exact React Implementation)</h2>
+        
+        <div class="message-test">
+            <h3>✅ Success Message (Password Changed Successfully)</h3>
+            <div class="message success-message" onclick="this.style.display='none'">
+                <i class="fas fa-check-circle"></i>
+                Password changed successfully!
+            </div>
+            <div class="debug-info">
+                <strong>Classes:</strong> message success-message<br>
+                <strong>Expected:</strong> Green background, white text<br>
+                <strong>Status:</strong> <span id="success-status">Check visually</span>
+            </div>
+        </div>
+        
+        <div class="message-test">
+            <h3>❌ Error Message (Current Password Incorrect)</h3>
+            <div class="message error-message" onclick="this.style.display='none'">
+                <i class="fas fa-exclamation-circle"></i>
+                Current password is incorrect. Please try again.
+            </div>
+            <div class="debug-info">
+                <strong>Classes:</strong> message error-message<br>
+                <strong>Expected:</strong> Red background, white text<br>
+                <strong>Status:</strong> <span id="error-status">Check visually</span>
+            </div>
+        </div>
+        
+        <div class="message-test">
+            <h3>⚠️ Warning Message (Password Too Weak)</h3>
+            <div class="message warning-message" onclick="this.style.display='none'">
+                <i class="fas fa-exclamation-triangle"></i>
+                Password is too weak. Please choose a stronger password.
+            </div>
+            <div class="debug-info">
+                <strong>Classes:</strong> message warning-message<br>
+                <strong>Expected:</strong> Orange background, white text
+            </div>
+        </div>
+        
+        <div class="message-test">
+            <h3>ℹ️ Info Message (Regular Information)</h3>
+            <div class="message info-message" onclick="this.style.display='none'">
+                <i class="fas fa-info-circle"></i>
+                Your password will expire in 30 days.
+            </div>
+            <div class="debug-info">
+                <strong>Classes:</strong> message info-message<br>
+                <strong>Expected:</strong> Blue background, white text
+            </div>
+        </div>
+        
+        <div class="message-test">
+            <h3>🔘 Default Message (No Specific Class)</h3>
+            <div class="message" onclick="this.style.display='none'">
+                <i class="fas fa-comment"></i>
+                Just a regular message with default styling.
+            </div>
+            <div class="debug-info">
+                <strong>Classes:</strong> message (no success/error class)<br>
+                <strong>Expected:</strong> Light gray background, dark text
+            </div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. CSS Specificity Test</h2>
+        <p>Force specific styles to test if CSS loading correctly:</p>
+        
+        <div style="background: red; color: white; padding: 15px; margin: 10px 0; border-radius: 8px;">
+            <strong>Test Div (should be red):</strong> If you can see this red box, CSS is loading.
+        </div>
+        
+        <div style="background: green; color: white; padding: 15px; margin: 10px 0; border-radius: 8px;">
+            <strong>Test Div (should be green):</strong> If you can see this green box, CSS specificity works.
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Debug Actions</h2>
+        <button onclick="checkComputedStyles()" style="padding: 10px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            Check Computed Styles
+        </button>
+        <button onclick="testMessageToggle()" style="padding: 10px; margin: 5px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            Test Message Toggle
+        </button>
+        <button onclick="clearAll()" style="padding: 10px; margin: 5px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            Clear All
+        </button>
+        
+        <div id="debug-output" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 4px; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto;"></div>
+    </div>
+    
+    <script>
+        function checkComputedStyles() {
+            const output = document.getElementById('debug-output');
+            output.innerHTML = '<h3>Computed Styles Analysis:</h3>';
+            
+            const messages = document.querySelectorAll('.message');
+            messages.forEach((msg, index) => {
+                const computed = window.getComputedStyle(msg);
+                output.innerHTML += `
+                    <div style="margin: 10px 0; padding: 10px; border: 1px solid #ccc;">
+                        <strong>Message ${index + 1} (${msg.className}):</strong><br>
+                        Background: ${computed.background}<br>
+                        Background Color: ${computed.backgroundColor}<br>
+                        Color: ${computed.color}<br>
+                        Border Left Color: ${computed.borderLeftColor}
+                    </div>
+                `;
+            });
+        }
+        
+        function testMessageToggle() {
+            const output = document.getElementById('debug-output');
+            output.innerHTML = '<h3>Testing Dynamic Message Creation:</h3>';
+            
+            // Create a test success message dynamically
+            const testDiv = document.createElement('div');
+            testDiv.className = 'message success-message';
+            testDiv.innerHTML = '<i class="fas fa-check-circle"></i> Test Success Message';
+            testDiv.style.margin = '10px 0';
+            testDiv.style.cursor = 'pointer';
+            testDiv.onclick = () => testDiv.remove();
+            
+            output.appendChild(testDiv);
+            
+            // Check styles after a short delay
+            setTimeout(() => {
+                const computed = window.getComputedStyle(testDiv);
+                output.innerHTML += `
+                    <div style="margin: 10px 0; padding: 10px; background: #e7f3ff;">
+                        <strong>Dynamically Created Success Message:</strong><br>
+                        Background: ${computed.background}<br>
+                        Color: ${computed.color}<br>
+                        <span style="color: ${computed.backgroundColor.includes('rgb(34, 197, 94)') ? 'green' : 'red'};">
+                            ${computed.backgroundColor.includes('rgb(34, 197, 94)') ? '✅ GREEN DETECTED' : '❌ WRONG COLOR'}
+                        </span>
+                    </div>
+                `;
+            }, 100);
+        }
+        
+        function clearAll() {
+            document.getElementById('debug-output').innerHTML = '';
+            const tests = document.querySelectorAll('.message-test');
+            tests.forEach(test => test.style.display = 'block');
+        }
+        
+        // Auto-check styles on page load
+        window.addEventListener('load', () => {
+            setTimeout(checkComputedStyles, 1000);
+        });
+    </script>
+</body>
+</html>

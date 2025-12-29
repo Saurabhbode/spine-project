@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Messages</title>
+    <link rel="stylesheet" href="src/components/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .debug-section { margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; }
+        .test-message { margin-bottom: 20px; }
+        .current-applied { margin: 10px 0; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="debug-section">
+        <h2>Message Debug Test</h2>
+Check what classes are        <p> actually applied to the messages:</p>
+        
+        <div class="test-message">
+            <h3>Success Message (should be GREEN):</h3>
+            <div class="message success-message">
+                <i class="fas fa-check-circle"></i>
+                Password changed successfully!
+            </div>
+            <div class="current-applied">
+                <strong>Classes applied:</strong> message success-message
+            </div>
+        </div>
+        
+        <div class="test-message">
+            <h3>Error Message (should be RED):</h3>
+            <div class="message error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                Current password is incorrect
+            </div>
+            <div class="current-applied">
+                <strong>Classes applied:</strong> message error-message
+            </div>
+        </div>
+        
+        <div class="test-message">
+            <h3>Message without specific class:</h3>
+            <div class="message">
+                <i class="fas fa-info-circle"></i>
+                Just a regular message
+            </div>
+            <div class="current-applied">
+                <strong>Classes applied:</strong> message (no success/error class)
+            </div>
+        </div>
+    </div>
+    
+    <div class="debug-section">
+        <h3>CSS Rules Debug:</h3>
+        <p>Check browser developer tools to see what CSS rules are being applied and their specificity.</p>
+        <p><strong>Expected:</strong></p>
+        <ul>
+            <li>Success messages should have green background (#22c55e to #16a34a gradient)</li>
+            <li>Error messages should have red background (#ef4444 to #dc2626 gradient)</li>
+            <li>Text should be white (#ffffff)</li>
+        </ul>
+    </div>
+</body>
+</html>

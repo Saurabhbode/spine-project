@@ -1,0 +1,147 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import authService from "../../services/AuthService";
+import "../style.css";
+
+const OperationsDashboard = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [stats, setStats] = useState({
+    activeWorkflows: 8,
+    completedTasks: 156,
+    pendingApprovals: 5,
+    teamMembers: 23
+  });
+
+  useEffect(() => {
+    // Check authentication
+    if (!authService.isAuthenticated()) {
+      navigate("/login");
+      return;
+    }
+
+    const currentUser = authService.getUser();
+    if (!currentUser || currentUser.department !== "Operations") {
+      navigate("/login");
+      return;
+    }
+
+    setUser(currentUser);
+  }, [navigate]);
+
+  const handleLogout = () => {
+    authService.logout();
+    navigate("/");
+  };
+
+  if (!user) {
+    return (
+      <div className="dashboard-container">
+        <div className="loading">Loading...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="dashboard-container">
+      {/* Header */}
+      <header className="dashboard-header">
+        <div className="header-content">
+          <h1>Operations Department Dashboard</h1>
+          <div className="user-info">
+            <span>Welcome, {user.name}</span>
+            <button onClick={handleLogout} className="logout-btn">
+              Logout
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="dashboard-main">
+        {/* Quick Stats */}
+        <section className="stats-grid">
+          <div className="stat-card">
+            <h3>Active Workflows</h3>
+            <p className="stat-number">{stats.activeWorkflows}</p>
+            <span className="stat-change neutral">2 need approval</span>
+          </div>
+          
+          <div className="stat-card">
+            <h3>Completed Tasks</h3>
+            <p className="stat-number">{stats.completedTasks}</p>
+            <span className="stat-change positive">+18 this week</span>
+          </div>
+          
+          <div className="stat-card">
+            <h3>Pending Approvals</h3>
+            <p className="stat-number">{stats.pendingApprovals}</p>
+            <span className="stat-change neutral">Average 2.3 days</span>
+          </div>
+          
+          <div className="stat-card">
+            <h3>Team Members</h3>
+            <p className="stat-number">{stats.teamMembers}</p>
+            <span className="stat-change positive">+2 new this month</span>
+          </div>
+        </section>
+
+        {/* Quick Actions */}
+        <section className="quick-actions">
+          <h2>Quick Actions</h2>
+          <div className="action-buttons">
+            <button className="action-btn primary">
+              <i className="fas fa-tasks"></i>
+              Create Workflow
+            </button>
+            <button className="action-btn secondary">
+              <i className="fas fa-clipboard-list"></i>
+              View Process Docs
+            </button>
+            <button className="action-btn secondary">
+              <i className="fas fa-users"></i>
+              Manage Team
+            </button>
+            <button className="action-btn secondary">
+              <i className="fas fa-chart-bar"></i>
+              Performance Reports
+            </button>
+          </div>
+        </section>
+
+        {/* Recent Activity */}
+        <section className="recent-activity">
+          <h2>Recent Activity</h2>
+          <div className="activity-list">
+            <div className="activity-item">
+              <i className="fas fa-check-circle activity-icon success"></i>
+              <div className="activity-content">
+                <p>Workflow <strong>Purchase Order Processing</strong> completed</p>
+                <span className="activity-time">1 hour ago</span>
+              </div>
+            </div>
+            
+            <div className="activity-item">
+              <i className="fas fa-user-plus activity-icon"></i>
+              <div className="activity-content">
+                <p>New team member <strong>Sarah Johnson</strong> added to Operations</p>
+                <span className="activity-time">3 hours ago</span>
+              </div>
+            </div>
+            
+            <div className="activity-item">
+              <i className="fas fa-clock activity-icon warning"></i>
+              <div className="activity-content">
+                <p>Approval needed for <strong>Inventory Restocking</strong> workflow</p>
+                <span className="activity-time">5 hours ago</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+};
+
+export default OperationsDashboard;
+
