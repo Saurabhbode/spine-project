@@ -1,8 +1,32 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "./style.css"; // Use the existing style.css for consistent styling
 
 const Landing = () => {
+  const [showAnimation, setShowAnimation] = useState(true);
+
+  useEffect(() => {
+    // Hide animation after 2.5 seconds and show the landing content
+    const timer = setTimeout(() => {
+      setShowAnimation(false);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (showAnimation) {
+    return (
+      <div className="welcome-animation-container">
+        <div className="welcome-animation">
+          <div className="spine-logo-animated">SPINE</div>
+          <div className="welcome-text">Welcome to</div>
+          <div className="loading-bar">
+            <div className="loading-progress"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="landing-container">
       {/* Header Section */}

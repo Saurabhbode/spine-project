@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Projects API</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .status {
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background: #cce5ff;
+            color: #004085;
+            border: 1px solid #b8daff;
+        }
+        .project-list {
+            margin-top: 20px;
+        }
+        .project-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+        .project-item h3 {
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .project-item p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .project-meta {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .project-meta span {
+            background: #e9ecef;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #495057;
+        }
+        .project-type {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .project-type.contingency {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+        .project-type.fte {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+        }
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #666;
+        }
+        .loading i {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1><i class="fas fa-project-diagram"></i> Projects API Test</h1>
+            <p>Use this page to test and seed project data in the database.</p>
+        </div>
+
+        <div class="card">
+            <h2><i class="fas fa-database"></i> Seed Sample Data</h2>
+            <p>Click the button below to create sample categories and projects in the database.</p>
+            <br>
+            <button class="btn btn-success" onclick="seedData()" id="seedBtn">
+                <i class="fas fa-seedling"></i> Seed Sample Data
+            </button>
+            <div id="seedResult"></div>
+        </div>
+
+        <div class="card">
+            <h2><i class="fas fa-list"></i> Get All Projects</h2>
+            <p>Fetch all projects from the database.</p>
+            <br>
+            <button class="btn btn-primary" onclick="fetchProjects()" id="fetchBtn">
+                <i class="fas fa-sync"></i> Fetch Projects
+            </button>
+            <div id="projectsResult"></div>
+        </div>
+
+        <div class="card">
+            <h2><i class="fas fa-tags"></i> Get All Categories</h2>
+            <p>Fetch all project categories from the database.</p>
+            <br>
+            <button class="btn btn-primary" onclick="fetchCategories()" id="categoriesBtn">
+                <i class="fas fa-sync"></i> Fetch Categories
+            </button>
+            <div id="categoriesResult"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api';
+
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}"><i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i> ${message}</div>`;
+        }
+
+        function showLoading(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i> ${message}</div>`;
+        }
+
+        async function seedData() {
+            const btn = document.getElementById('seedBtn');
+            btn.disabled = true;
+            showLoading('seedResult', 'Seeding sample data...');
+
+            try {
+                const response = await fetch(`${API_BASE}/projects/seed`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const text = await response.text();
+                    showStatus('seedResult', text, 'success');
+                } else {
+                    const error = await response.text();
+                    showStatus('seedResult', `Error: ${error}`, 'error');
+                }
+            } catch (error) {
+                showStatus('seedResult', `Connection Error: ${error.message}. Make sure the backend is running on http://localhost:8080`, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function fetchProjects() {
+            const btn = document.getElementById('fetchBtn');
+            btn.disabled = true;
+            showLoading('projectsResult', 'Fetching projects...');
+
+            try {
+                const response = await fetch(`${API_BASE}/projects`);
+
+                if (response.ok) {
+                    const projects = await response.json();
+                    
+                    if (projects.length === 0) {
+                        showStatus('projectsResult', 'No projects found in database. Please seed sample data first.', 'info');
+                        document.getElementById('projectsResult').innerHTML += `
+                            <div class="project-list">
+                                <p style="text-align: center; color: #666; padding: 20px;">
+                                    <i class="fas fa-folder-open" style="font-size: 48px; color: #ddd; margin-bottom: 10px;"></i><br>
+                                    No projects found
+                                </p>
+                            </div>
+                        `;
+                    } else {
+                        let html = `<div class="project-list">`;
+                        projects.forEach(project => {
+                            html += `
+                                <div class="project-item">
+                                    <h3>${project.projectName}</h3>
+                                    <p>${project.projectDescription || 'No description'}</p>
+                                    <div class="project-meta">
+                                        <span class="project-type ${project.projectType ? project.projectType.toLowerCase() : 'fte'}">
+                                            ${project.projectType || 'FTE'}
+                                        </span>
+                                        <span><i class="fas fa-building"></i> ${project.department || 'N/A'}</span>
+                                        <span><i class="fas fa-map-marker-alt"></i> ${project.location || 'N/A'}</span>
+                                        <span><i class="fas fa-dollar-sign"></i> $${project.budget ? parseFloat(project.budget).toLocaleString() : '0'}</span>
+                                        <span><i class="fas fa-tag"></i> ${project.categoryName || 'Uncategorized'}</span>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        html += '</div>';
+                        document.getElementById('projectsResult').innerHTML = html;
+                        showStatus('projectsResult', `Found ${projects.length} project(s)`, 'success');
+                    }
+                } else {
+                    showStatus('projectsResult', `HTTP Error: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                showStatus('projectsResult', `Connection Error: ${error.message}. Make sure the backend is running on http://localhost:8080`, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function fetchCategories() {
+            const btn = document.getElementById('categoriesBtn');
+            btn.disabled = true;
+            showLoading('categoriesResult', 'Fetching categories...');
+
+            try {
+                const response = await fetch(`${API_BASE}/projects/categories`);
+
+                if (response.ok) {
+                    const categories = await response.json();
+                    
+                    if (categories.length === 0) {
+                        showStatus('categoriesResult', 'No categories found in database.', 'info');
+                    } else {
+                        let html = '<div class="project-list">';
+                        categories.forEach(cat => {
+                            html += `
+                                <div class="project-item">
+                                    <h3>${cat.categoryName}</h3>
+                                    <p>${cat.categoryDescription || 'No description'}</p>
+                                </div>
+                            `;
+                        });
+                        html += '</div>';
+                        document.getElementById('categoriesResult').innerHTML = html;
+                        showStatus('categoriesResult', `Found ${categories.length} category(ies)`, 'success');
+                    }
+                } else {
+                    showStatus('categoriesResult', `HTTP Error: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                showStatus('categoriesResult', `Connection Error: ${error.message}. Make sure the backend is running on http://localhost:8080`, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
+
