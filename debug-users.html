@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Users Loading</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .error { color: red; }
+        .success { color: green; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Debug Users Loading Issue</h1>
+    
+    <div class="debug-section">
+        <h2>Step 1: Test Backend API Directly</h2>
+        <button onclick="testBackendAPI()">Test Backend API</button>
+        <div id="backend-result"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>Step 2: Test with Authentication Token</h2>
+        <input type="text" id="token" placeholder="Enter auth token" style="width: 300px;">
+        <button onclick="testWithToken()">Test with Token</button>
+        <div id="token-result"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>Step 3: Check Local Storage</h2>
+        <button onclick="checkStorage()">Check Local Storage</button>
+        <div id="storage-result"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>Step 4: Manual Frontend API Call</h2>
+        <button onclick="testFrontendAPI()">Test Frontend API Call</button>
+        <div id="frontend-result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api';
+
+        // Step 1: Test backend API directly
+        async function testBackendAPI() {
+            const resultDiv = document.getElementById('backend-result');
+            try {
+                const response = await fetch(`${API_BASE}/admin/users`);
+                const data = await response.json();
+                resultDiv.innerHTML = `
+                    <p class="${data.success ? 'success' : 'error'}">
+                        Status: ${data.success ? 'Success' : 'Failed'} - ${data.total || 0} users found
+                    </p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Step 2: Test with authentication token
+        async function testWithToken() {
+            const resultDiv = document.getElementById('token-result');
+            const token = document.getElementById('token').value;
+            
+            if (!token) {
+                resultDiv.innerHTML = `<p class="error">Please enter an authentication token</p>`;
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/admin/users`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const data = await response.json();
+                resultDiv.innerHTML = `
+                    <p class="${data.success ? 'success' : 'error'}">
+                        Status: ${data.success ? 'Success' : 'Failed'}
+                    </p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Step 3: Check local storage
+        function checkStorage() {
+            const resultDiv = document.getElementById('storage-result');
+            const token = localStorage.getItem('accessToken');
+            const result = {
+                accessToken: token ? 'EXISTS' : 'NOT FOUND',
+                tokenLength: token ? token.length : 0,
+                tokenPreview: token ? token.substring(0, 20) + '...' : 'N/A'
+            };
+            resultDiv.innerHTML = `
+                <pre>${JSON.stringify(result, null, 2)}</pre>
+                ${!token ? '<p class="error">No access token found in localStorage!</p>' : '<p class="success">Access token found</p>'}
+            `;
+        }
+
+        // Step 4: Test frontend API call
+        async function testFrontendAPI() {
+            const resultDiv = document.getElementById('frontend-result');
+            try {
+                const token = localStorage.getItem('accessToken');
+                console.log('Testing with token:', token ? 'EXISTS' : 'NOT FOUND');
+                
+                const response = await fetch(`${API_BASE}/admin/users`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                resultDiv.innerHTML = `
+                    <p class="${data.success ? 'success' : 'error'}">
+                        Frontend API Test: ${data.success ? 'SUCCESS' : 'FAILED'}
+                    </p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                    <p>Check console for detailed logs</p>
+                `;
+            } catch (error) {
+                console.error('Frontend API test error:', error);
+                resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Auto-run tests on page load
+        window.onload = function() {
+            console.log('Debug page loaded');
+            checkStorage();
+        };
+    </script>
+</body>
+</html>

@@ -17,7 +17,6 @@ const Signup = () => {
     employeeNumber: "",
     email: "",
     location: "",
-    role: "",
     password: "",
     confirmPassword: "",
     department: selectedDepartment || ""
@@ -26,31 +25,6 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [departments, setDepartments] = useState(["Finance", "Operations", "Trace Sheets"]);
-
-  // Role options based on department
-  const getRoleOptions = (department) => {
-    if (!department) return [];
-    
-    switch(department) {
-      case "Finance":
-        return [
-          { value: "User", label: "User" },
-          { value: "Manager", label: "Manager" },
-          { value: "Finance", label: "Finance" }
-        ];
-      case "Operations":
-      case "Trace Sheets":
-        return [
-          { value: "User", label: "User" },
-          { value: "Leads", label: "Leads" },
-          { value: "Manager", label: "Manager" }
-        ];
-      default:
-        return [];
-    }
-  };
-
-  const roleOptions = getRoleOptions(formData.department);
 
   useEffect(() => {
     // Load valid departments from API
@@ -72,19 +46,10 @@ const Signup = () => {
       return;
     }
     
-    if (name === "department") {
-      // Reset role when department changes
-      setFormData(prev => ({
-        ...prev,
-        [name]: value,
-        role: ""
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
     setError(""); // Clear error when user types
   };
 
@@ -107,13 +72,6 @@ const Signup = () => {
       return;
     }
 
-    // Validate role selected
-    if (!formData.role) {
-      setError("Please select a role");
-      setLoading(false);
-      return;
-    }
-
     try {
       const result = await authService.register({
         username: formData.name,  // Map name field to username
@@ -122,7 +80,6 @@ const Signup = () => {
         email: formData.email,
         location: formData.location,
         department: formData.department,
-        role: formData.role,
         password: formData.password
       });
 
@@ -213,23 +170,6 @@ const Signup = () => {
               required
             />
             <i className="fas fa-map-marker-alt input-icon"></i>
-          </div>
-
-          <div className="input-group">
-            <select
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              required
-              className="role-select"
-              disabled={!formData.department}
-            >
-              <option value="">Select Role</option>
-              {roleOptions.map(role => (
-                <option key={role.value} value={role.value}>{role.label}</option>
-              ))}
-            </select>
-            <i className="fas fa-users input-icon"></i>
           </div>
 
           <div className="input-group">

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import authService from "../../services/AuthService";
+import ProjectService from "../../services/ProjectService";
+import Users from "./Users";
+import Employees from "./Employees";
 import "../style.css";
 
 const FinanceManagerDashboard = () => {
@@ -17,6 +20,46 @@ const FinanceManagerDashboard = () => {
     pendingExpenses: 0,
     budgetUtilization: 0
   });
+
+  // Projects state
+  const [projects, setProjects] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+  const [categoriesError, setCategoriesError] = useState(null);
+  const [showAddProjectModal, setShowAddProjectModal] = useState(false);
+  const [showEditProjectModal, setShowEditProjectModal] = useState(false);
+  const [projectLoading, setProjectLoading] = useState(false);
+  const [projectMessage, setProjectMessage] = useState(null);
+  const [projectToEdit, setProjectToEdit] = useState(null);
+  const [deleteConfirmProject, setDeleteConfirmProject] = useState(null);
+
+  // New project form state
+  const [newProject, setNewProject] = useState({
+    projectName: "",
+    projectDescription: "",
+    categoryId: "",
+    projectType: "FTE",
+    startDate: "",
+    endDate: "",
+    budget: "",
+    location: "",
+    department: "Finance"
+  });
+
+  // Project filter state
+  const [projectFilter, setProjectFilter] = useState("all"); // 'all', 'contingency', 'fte'
+
+  // Get filtered projects based on filter state
+  const getFilteredProjects = () => {
+    if (projectFilter === "all") {
+      return projects;
+    } else if (projectFilter === "contingency") {
+      return projects.filter(p => p.projectType === "Contingency");
+    } else if (projectFilter === "fte") {
+      return projects.filter(p => p.projectType === "FTE");
+    }
+    return projects;
+  };
 
   const [recentActivities, setRecentActivities] = useState([
     {
@@ -63,7 +106,9 @@ const FinanceManagerDashboard = () => {
   // Navigation menu items
   const navigationItems = [
     { id: "dashboard", label: "Dashboard", icon: "fas fa-tachometer-alt" },
-    { id: "overview", label: "Project Overview", icon: "fas fa-project-diagram" }
+    { id: "overview", label: "Project Overview", icon: "fas fa-project-diagram" },
+    { id: "employees", label: "Employees", icon: "fas fa-user-tie" },
+    { id: "users", label: "Users", icon: "fas fa-users" }
   ];
 
   useEffect(() => {
@@ -115,6 +160,11 @@ const FinanceManagerDashboard = () => {
     setActiveSection(section);
     // Handle navigation logic based on section
     console.log("Navigating to:", section);
+    
+    // Load projects when navigating to overview section
+    if (section === "overview") {
+      loadProjects();
+    }
   };
 
   const toggleSidebar = () => {
@@ -126,6 +176,237 @@ const FinanceManagerDashboard = () => {
       style: 'currency',
       currency: 'USD'
     }).format(amount);
+  };
+
+  // Load projects from API
+  const loadProjects = async () => {
+    try {
+      const data = await ProjectService.getAllProjects();
+      setProjects(data);
+    } catch (error) {
+      console.error("Error loading projects:", error);
+    }
+  };
+
+  // Load categories from API
+  const loadCategories = async () => {
+    setCategoriesLoading(true);
+    setCategoriesError(null);
+    console.log("Loading categories from API...");
+    
+    try {
+      console.log("Calling ProjectService.getAllCategories()...");
+      const data = await ProjectService.getAllCategories();
+      console.log("Categories loaded successfully:", data);
+      setCategories(data);
+      
+      if (data.length === 0) {
+        console.warn("No categories found in database. The project_category table may be empty.");
+        setCategoriesError("No categories available. Please add categories first.");
+      }
+    } catch (error) {
+      console.error("Error loading categories:", error);
+      console.error("Error name:", error.name);
+      console.error("Error message:", error.message);
+      
+      // Provide more helpful error messages
+      if (error.message.includes("Failed to fetch") || error.message.includes("NetworkError")) {
+        setCategoriesError("Cannot connect to server. Make sure the backend is running on http://localhost:8080");
+      } else if (error.message.includes("404")) {
+        setCategoriesError("API endpoint not found. Please check backend configuration.");
+      } else if (error.message.includes("500")) {
+        setCategoriesError("Server error. Please check database connection.");
+      } else {
+        setCategoriesError(error.message || "Failed to load categories. Please try again.");
+      }
+      setCategories([]);
+    } finally {
+      setCategoriesLoading(false);
+    }
+  };
+
+  // Handle input changes for new project form
+  const handleProjectInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewProject(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Reset new project form
+  const resetNewProjectForm = () => {
+    setNewProject({
+      projectName: "",
+      projectDescription: "",
+      categoryId: "",
+      startDate: "",
+      endDate: "",
+      budget: "",
+      location: "",
+      department: "Finance"
+    });
+    setProjectMessage(null);
+  };
+
+  // Open add project modal
+  const openAddProjectModal = () => {
+    resetNewProjectForm();
+    loadCategories();
+    setShowAddProjectModal(true);
+  };
+
+  // Close add project modal
+  const closeAddProjectModal = () => {
+    setShowAddProjectModal(false);
+    resetNewProjectForm();
+  };
+
+  // Handle add project submission
+  const handleAddProject = async (e) => {
+    e.preventDefault();
+    setProjectLoading(true);
+    setProjectMessage(null);
+
+    try {
+      const projectData = {
+        projectName: newProject.projectName,
+        projectDescription: newProject.projectDescription,
+        categoryId: newProject.categoryId ? parseInt(newProject.categoryId) : null,
+        projectType: newProject.projectType || "FTE",
+        startDate: newProject.startDate || null,
+        endDate: newProject.endDate || null,
+        budget: newProject.budget ? parseFloat(newProject.budget) : null,
+        location: newProject.location,
+        department: newProject.department
+      };
+
+      const response = await ProjectService.createProject(projectData);
+      
+      setProjectMessage({
+        type: 'success',
+        text: `Project "${response.projectName}" created successfully!`
+      });
+
+      // Refresh projects list and close modal after a delay
+      setTimeout(() => {
+        loadProjects();
+        closeAddProjectModal();
+      }, 1500);
+    } catch (error) {
+      setProjectMessage({
+        type: 'error',
+        text: error.message || 'Failed to create project. Please try again.'
+      });
+    } finally {
+      setProjectLoading(false);
+    }
+  };
+
+  // Handle edit project button click
+  const handleEditProject = (project) => {
+    // Populate the form with the project's original values
+    setNewProject({
+      projectName: project.projectName || "",
+      projectDescription: project.projectDescription || "",
+      categoryId: project.categoryId ? String(project.categoryId) : "",
+      projectType: project.projectType || "FTE",
+      startDate: project.startDate || "",
+      endDate: project.endDate || "",
+      budget: project.budget !== null && project.budget !== undefined ? String(project.budget) : "",
+      location: project.location || "",
+      department: project.department || "Finance"
+    });
+    setProjectToEdit(project);
+    loadCategories();
+    setShowEditProjectModal(true);
+  };
+
+  // Close edit project modal
+  const closeEditProjectModal = () => {
+    setShowEditProjectModal(false);
+    setProjectToEdit(null);
+  };
+
+  // Handle update project submission
+  const handleUpdateProject = async (e) => {
+    e.preventDefault();
+    setProjectLoading(true);
+    setProjectMessage(null);
+
+    try {
+      const projectData = {
+        projectName: newProject.projectName,
+        projectDescription: newProject.projectDescription,
+        categoryId: newProject.categoryId ? parseInt(newProject.categoryId) : null,
+        projectType: newProject.projectType || "FTE",
+        startDate: newProject.startDate || null,
+        endDate: newProject.endDate || null,
+        budget: newProject.budget ? parseFloat(newProject.budget) : null,
+        location: newProject.location,
+        department: newProject.department
+      };
+
+      const response = await ProjectService.updateProject(projectToEdit.id, projectData);
+      
+      setProjectMessage({
+        type: 'success',
+        text: `Project "${response.projectName}" updated successfully!`
+      });
+
+      // Refresh projects list and close modal after a delay
+      setTimeout(() => {
+        loadProjects();
+        closeEditProjectModal();
+      }, 1500);
+    } catch (error) {
+      setProjectMessage({
+        type: 'error',
+        text: error.message || 'Failed to update project. Please try again.'
+      });
+    } finally {
+      setProjectLoading(false);
+    }
+  };
+
+  // Handle delete project button click
+  const handleDeleteProject = async () => {
+    if (!deleteConfirmProject) return;
+    
+    setProjectLoading(true);
+    setProjectMessage(null);
+
+    try {
+      await ProjectService.deleteProject(deleteConfirmProject.id);
+      
+      setProjectMessage({
+        type: 'success',
+        text: `Project "${deleteConfirmProject.projectName}" deleted successfully!`
+      });
+
+      // Refresh projects list and close modal after a delay
+      setTimeout(() => {
+        loadProjects();
+        setDeleteConfirmProject(null);
+      }, 1500);
+    } catch (error) {
+      setProjectMessage({
+        type: 'error',
+        text: error.message || 'Failed to delete project. Please try again.'
+      });
+    } finally {
+      setProjectLoading(false);
+    }
+  };
+
+  // Open delete confirmation modal
+  const openDeleteConfirmModal = (project) => {
+    setDeleteConfirmProject(project);
+  };
+
+  // Close delete confirmation modal
+  const closeDeleteConfirmModal = () => {
+    setDeleteConfirmProject(null);
   };
 
   if (loading) {
@@ -466,9 +747,12 @@ const FinanceManagerDashboard = () => {
             </>
           )}
 
+          {activeSection === "employees" && (
+            <Employees />
+          )}
+
           {activeSection === "overview" && (
             <section className="content-section">
-              
               <div className="project-stats">
                 <div className="stat-card">
                   <h3>Good Performers</h3>
@@ -492,58 +776,145 @@ const FinanceManagerDashboard = () => {
                   </div>
                 </div>
               </div>
-              <div className="project-list">
-                <h3>Current Projects</h3>
-                <div className="project-item">
-                  <div className="project-info">
-                    <h4>Financial System Upgrade</h4>
-                    <p>Modernizing legacy financial systems</p>
-                    <div className="project-progress">
-                      <span className="progress-bar">
-                        <span className="progress-fill" style={{width: '75%'}}></span>
-                      </span>
-                      <span className="progress-text">75% Complete</span>
+
+              {/* Projects List Section */}
+              <section className="projects-section">
+                <div className="projects-header">
+                  <div className="projects-title-row">
+                    <h2>
+                      <i className="fas fa-project-diagram"></i>
+                      All Projects
+                    </h2>
+                    <div className="projects-count">
+                      <span className="count-badge">{getFilteredProjects().length} Projects</span>
                     </div>
                   </div>
-                  <div className="project-status">
-                    <span className="status-indicator active">Active</span>
+                  <div className="overview-buttons">
+                    <button className="action-btn primary" onClick={openAddProjectModal}>
+                      <i className="fas fa-plus-circle"></i>
+                      Add Project
+                    </button>
+                    <button 
+                      className={`action-btn ${projectFilter === 'all' ? 'primary' : 'secondary'}`}
+                      onClick={() => setProjectFilter('all')}
+                    >
+                      <i className="fas fa-list"></i>
+                      All Projects
+                    </button>
+                    <button 
+                      className={`action-btn ${projectFilter === 'contingency' ? 'primary' : 'secondary'}`}
+                      onClick={() => setProjectFilter('contingency')}
+                    >
+                      <i className="fas fa-handshake"></i>
+                      Contingency-Based
+                    </button>
+                    <button 
+                      className={`action-btn ${projectFilter === 'fte' ? 'primary' : 'secondary'}`}
+                      onClick={() => setProjectFilter('fte')}
+                    >
+                      <i className="fas fa-users"></i>
+                      FTE Based
+                    </button>
                   </div>
                 </div>
-                <div className="project-item">
-                  <div className="project-info">
-                    <h4>Database Migration</h4>
-                    <p>Migrating to cloud-based database solutions</p>
-                    <div className="project-progress">
-                      <span className="progress-bar">
-                        <span className="progress-fill" style={{width: '45%'}}></span>
-                      </span>
-                      <span className="progress-text">45% Complete</span>
-                    </div>
+
+                {getFilteredProjects().length === 0 ? (
+                  <div className="no-projects">
+                    <i className="fas fa-folder-open"></i>
+                    <h3>No Projects Found</h3>
+                    <p>There are no projects to display. Click "Add Project" to create your first project.</p>
+                    <button className="action-btn primary" onClick={openAddProjectModal}>
+                      <i className="fas fa-plus-circle"></i>
+                      Add Project
+                    </button>
                   </div>
-                  <div className="project-status">
-                    <span className="status-indicator active">Active</span>
+                ) : (
+                  <div className="projects-grid">
+                    {getFilteredProjects().map((project) => (
+                      <div className="project-card" key={project.id}>
+                        <div className="project-card-header">
+                          <div className="project-icon">
+                            <i className="fas fa-folder"></i>
+                          </div>
+                          <div className="project-card-actions">
+                            <button 
+                              className="project-action-btn" 
+                              title="Edit Project"
+                              onClick={() => handleEditProject(project)}
+                            >
+                              <i className="fas fa-edit"></i>
+                            </button>
+                            <button 
+                              className="project-action-btn delete-btn" 
+                              title="Delete Project"
+                              onClick={() => openDeleteConfirmModal(project)}
+                            >
+                              <i className="fas fa-trash-alt"></i>
+                            </button>
+                          </div>
+                        </div>
+                        <div className="project-card-body">
+                          <h3 className="project-name">{project.projectName}</h3>
+                          {project.projectDescription && (
+                            <p className="project-description">{project.projectDescription}</p>
+                          )}
+                          <div className="project-details">
+                            {project.categoryName && (
+                              <div className="project-detail">
+                                <i className="fas fa-tag"></i>
+                                <span>{project.categoryName}</span>
+                              </div>
+                            )}
+                            {project.budget && (
+                              <div className="project-detail">
+                                <i className="fas fa-dollar-sign"></i>
+                                <span>{formatCurrency(project.budget)}</span>
+                              </div>
+                            )}
+                            {project.startDate && (
+                              <div className="project-detail">
+                                <i className="fas fa-calendar-alt"></i>
+                                <span>{new Date(project.startDate).toLocaleDateString()}</span>
+                              </div>
+                            )}
+                            {project.endDate && (
+                              <div className="project-detail">
+                                <i className="fas fa-calendar-check"></i>
+                                <span>{new Date(project.endDate).toLocaleDateString()}</span>
+                              </div>
+                            )}
+                            {project.department && (
+                              <div className="project-detail">
+                                <i className="fas fa-building"></i>
+                                <span>{project.department}</span>
+                              </div>
+                            )}
+                            {project.location && (
+                              <div className="project-detail">
+                                <i className="fas fa-map-marker-alt"></i>
+                                <span>{project.location}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="project-card-footer">
+                          <span className={`project-status ${project.status ? project.status.toLowerCase() : 'active'}`}>
+                            {project.status || 'Active'}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
-                <div className="project-item">
-                  <div className="project-info">
-                    <h4>Security Enhancement</h4>
-                    <p>Implementing advanced security measures</p>
-                    <div className="project-progress">
-                      <span className="progress-bar">
-                        <span className="progress-fill" style={{width: '90%'}}></span>
-                      </span>
-                      <span className="progress-text">90% Complete</span>
-                    </div>
-                  </div>
-                  <div className="project-status">
-                    <span className="status-indicator busy">Final Review</span>
-                  </div>
-                </div>
-              </div>
+                )}
+              </section>
             </section>
           )}
 
-          {activeSection !== "dashboard" && activeSection !== "overview" && (
+          {activeSection === "users" && (
+            <Users />
+          )}
+
+          {activeSection !== "dashboard" && activeSection !== "overview" && activeSection !== "users" && (
             <section className="content-section">
               <h2><i className={`fas ${navigationItems.find(item => item.id === activeSection)?.icon}`}></i> {navigationItems.find(item => item.id === activeSection)?.label}</h2>
               <div className="content-placeholder">
@@ -554,6 +925,505 @@ const FinanceManagerDashboard = () => {
           )}
         </main>
       </div>
+
+      {/* Add Project Modal */}
+      {showAddProjectModal && (
+        <div className="modal-overlay" onClick={closeAddProjectModal}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '550px' }}>
+            <div className="modal-header">
+              <h3>
+                <i className="fas fa-project-diagram"></i>
+                Add New Project
+              </h3>
+            </div>
+            <div className="modal-body">
+              <form id="addProjectForm" onSubmit={handleAddProject}>
+                {projectMessage && (
+                  <div className={`message ${projectMessage.type}-message`}>
+                    <i className={`fas ${projectMessage.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}`}></i>
+                    {projectMessage.text}
+                  </div>
+                )}
+
+                <div className="input-group">
+                  <label htmlFor="projectName">
+                    <i className="fas fa-clipboard-list"></i>
+                    Project Name <span className="required">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="projectName"
+                    name="projectName"
+                    value={newProject.projectName}
+                    onChange={handleProjectInputChange}
+                    placeholder="Enter project name"
+                    required
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label htmlFor="projectDescription">
+                    <i className="fas fa-align-left"></i>
+                    Description
+                  </label>
+                  <textarea
+                    id="projectDescription"
+                    name="projectDescription"
+                    value={newProject.projectDescription}
+                    onChange={handleProjectInputChange}
+                    placeholder="Enter project description"
+                    rows="3"
+                    style={{ width: '100%', padding: '12px', border: '2px solid #e1e5e9', borderRadius: '8px', fontFamily: 'inherit', resize: 'vertical' }}
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label htmlFor="categoryId">
+                    <i className="fas fa-tags"></i>
+                    Category
+                  </label>
+                  {categoriesLoading ? (
+                    <div style={{ display: 'flex', alignItems: 'center', padding: '12px', color: '#666' }}>
+                      <i className="fas fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>
+                      Loading categories...
+                    </div>
+                  ) : categoriesError ? (
+                    <div style={{ padding: '12px', color: '#dc2626', fontSize: '14px' }}>
+                      <i className="fas fa-exclamation-triangle" style={{ marginRight: '8px' }}></i>
+                      {categoriesError}
+                    </div>
+                  ) : (
+                    <select
+                      id="categoryId"
+                      name="categoryId"
+                      value={newProject.categoryId}
+                      onChange={handleProjectInputChange}
+                      className="role-select"
+                      style={{ width: '100%', padding: '12px', border: '2px solid #e1e5e9', borderRadius: '8px' }}
+                    >
+                      <option value="">Select a category</option>
+                      {categories.map(cat => (
+                        <option key={cat.id} value={cat.id}>
+                          {cat.categoryName}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                <div className="input-group">
+                  <label htmlFor="projectType">
+                    <i className="fas fa-users"></i>
+                    Project Type
+                  </label>
+                  <select
+                    id="projectType"
+                    name="projectType"
+                    value={newProject.projectType}
+                    onChange={handleProjectInputChange}
+                    className="role-select"
+                    style={{ width: '100%', padding: '12px', border: '2px solid #e1e5e9', borderRadius: '8px' }}
+                  >
+                    <option value="FTE">FTE Based</option>
+                    <option value="Contingency">Contingency Based</option>
+                  </select>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="input-group">
+                    <label htmlFor="startDate">
+                      <i className="fas fa-calendar-alt"></i>
+                      Start Date
+                    </label>
+                    <input
+                      type="date"
+                      id="startDate"
+                      name="startDate"
+                      value={newProject.startDate}
+                      onChange={handleProjectInputChange}
+                    />
+                  </div>
+
+                  <div className="input-group">
+                    <label htmlFor="endDate">
+                      <i className="fas fa-calendar-check"></i>
+                      End Date
+                    </label>
+                    <input
+                      type="date"
+                      id="endDate"
+                      name="endDate"
+                      value={newProject.endDate}
+                      onChange={handleProjectInputChange}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="input-group">
+                    <label htmlFor="budget">
+                      <i className="fas fa-dollar-sign"></i>
+                      Budget
+                    </label>
+                    <input
+                      type="number"
+                      id="budget"
+                      name="budget"
+                      value={newProject.budget}
+                      onChange={handleProjectInputChange}
+                      placeholder="0.00"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+
+                  <div className="input-group">
+                    <label htmlFor="department">
+                      <i className="fas fa-building"></i>
+                      Department
+                    </label>
+                    <select
+                      id="department"
+                      name="department"
+                      value={newProject.department}
+                      onChange={handleProjectInputChange}
+                      className="role-select"
+                      style={{ width: '100%', padding: '12px', border: '2px solid #e1e5e9', borderRadius: '8px' }}
+                    >
+                      <option value="Finance">Finance</option>
+                      <option value="Operations">Operations</option>
+                      <option value="Trace Sheets">Trace Sheets</option>
+                      <option value="HR">HR</option>
+                      <option value="IT">IT</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="input-group">
+                  <label htmlFor="location">
+                    <i className="fas fa-map-marker-alt"></i>
+                    Location
+                  </label>
+                  <input
+                    type="text"
+                    id="location"
+                    name="location"
+                    value={newProject.location}
+                    onChange={handleProjectInputChange}
+                    placeholder="Enter project location"
+                  />
+                </div>
+              </form>
+            </div>
+            <div className="modal-footer">
+              <button 
+                type="button" 
+                className="cancel-btn" 
+                onClick={closeAddProjectModal}
+                disabled={projectLoading}
+              >
+                <i className="fas fa-times"></i>
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                form="addProjectForm" 
+                className="confirm-btn" 
+                disabled={projectLoading || !newProject.projectName.trim()}
+                style={{ background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)' }}
+              >
+                {projectLoading ? (
+                  <>
+                    <i className="fas fa-spinner fa-spin"></i>
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <i className="fas fa-plus"></i>
+                    Create Project
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Project Modal */}
+      {showEditProjectModal && projectToEdit && (
+        <div className="modal-overlay" onClick={closeEditProjectModal}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '550px' }}>
+            <div className="modal-header">
+              <h3>
+                <i className="fas fa-edit"></i>
+                Edit Project
+              </h3>
+            </div>
+            <div className="modal-body">
+              <form id="editProjectForm" onSubmit={handleUpdateProject}>
+                {projectMessage && (
+                  <div className={`message ${projectMessage.type}-message`}>
+                    <i className={`fas ${projectMessage.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}`}></i>
+                    {projectMessage.text}
+                  </div>
+                )}
+
+                <div className="input-group">
+                  <label htmlFor="editProjectName">
+                    <i className="fas fa-clipboard-list"></i>
+                    Project Name <span className="required">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="editProjectName"
+                    name="projectName"
+                    value={newProject.projectName}
+                    onChange={handleProjectInputChange}
+                    placeholder="Enter project name"
+                    required
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label htmlFor="editProjectDescription">
+                    <i className="fas fa-align-left"></i>
+                    Description
+                  </label>
+                  <textarea
+                    id="editProjectDescription"
+                    name="projectDescription"
+                    value={newProject.projectDescription}
+                    onChange={handleProjectInputChange}
+                    placeholder="Enter project description"
+                    rows="3"
+                    style={{ width: '100%', padding: '12px', border: '2px solid #e1e5e9', borderRadius: '8px', fontFamily: 'inherit', resize: 'vertical' }}
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label htmlFor="editCategoryId">
+                    <i className="fas fa-tags"></i>
+                    Category
+                  </label>
+                  {categoriesLoading ? (
+                    <div style={{ display: 'flex', alignItems: 'center', padding: '12px', color: '#666' }}>
+                      <i className="fas fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>
+                      Loading categories...
+                    </div>
+                  ) : categoriesError ? (
+                    <div style={{ padding: '12px', color: '#dc2626', fontSize: '14px' }}>
+                      <i className="fas fa-exclamation-triangle" style={{ marginRight: '8px' }}></i>
+                      {categoriesError}
+                    </div>
+                  ) : (
+                    <select
+                      id="editCategoryId"
+                      name="categoryId"
+                      value={newProject.categoryId}
+                      onChange={handleProjectInputChange}
+                      className="role-select"
+                      style={{ width: '100%', padding: '12px', border: '2px solid #e1e5e9', borderRadius: '8px' }}
+                    >
+                      <option value="">Select a category</option>
+                      {categories.map(cat => (
+                        <option key={cat.id} value={cat.id}>
+                          {cat.categoryName}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                <div className="input-group">
+                  <label htmlFor="editProjectType">
+                    <i className="fas fa-users"></i>
+                    Project Type
+                  </label>
+                  <select
+                    id="editProjectType"
+                    name="projectType"
+                    value={newProject.projectType}
+                    onChange={handleProjectInputChange}
+                    className="role-select"
+                    style={{ width: '100%', padding: '12px', border: '2px solid #e1e5e9', borderRadius: '8px' }}
+                  >
+                    <option value="FTE">FTE Based</option>
+                    <option value="Contingency">Contingency Based</option>
+                  </select>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="input-group">
+                    <label htmlFor="editStartDate">
+                      <i className="fas fa-calendar-alt"></i>
+                      Start Date
+                    </label>
+                    <input
+                      type="date"
+                      id="editStartDate"
+                      name="startDate"
+                      value={newProject.startDate}
+                      onChange={handleProjectInputChange}
+                    />
+                  </div>
+
+                  <div className="input-group">
+                    <label htmlFor="editEndDate">
+                      <i className="fas fa-calendar-check"></i>
+                      End Date
+                    </label>
+                    <input
+                      type="date"
+                      id="editEndDate"
+                      name="endDate"
+                      value={newProject.endDate}
+                      onChange={handleProjectInputChange}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="input-group">
+                    <label htmlFor="editBudget">
+                      <i className="fas fa-dollar-sign"></i>
+                      Budget
+                    </label>
+                    <input
+                      type="number"
+                      id="editBudget"
+                      name="budget"
+                      value={newProject.budget}
+                      onChange={handleProjectInputChange}
+                      placeholder="0.00"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+
+                  <div className="input-group">
+                    <label htmlFor="editDepartment">
+                      <i className="fas fa-building"></i>
+                      Department
+                    </label>
+                    <select
+                      id="editDepartment"
+                      name="department"
+                      value={newProject.department}
+                      onChange={handleProjectInputChange}
+                      className="role-select"
+                      style={{ width: '100%', padding: '12px', border: '2px solid #e1e5e9', borderRadius: '8px' }}
+                    >
+                      <option value="Finance">Finance</option>
+                      <option value="Operations">Operations</option>
+                      <option value="Trace Sheets">Trace Sheets</option>
+                      <option value="HR">HR</option>
+                      <option value="IT">IT</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="input-group">
+                  <label htmlFor="editLocation">
+                    <i className="fas fa-map-marker-alt"></i>
+                    Location
+                  </label>
+                  <input
+                    type="text"
+                    id="editLocation"
+                    name="location"
+                    value={newProject.location}
+                    onChange={handleProjectInputChange}
+                    placeholder="Enter project location"
+                  />
+                </div>
+              </form>
+            </div>
+            <div className="modal-footer">
+              <button 
+                type="button" 
+                className="cancel-btn" 
+                onClick={closeEditProjectModal}
+                disabled={projectLoading}
+              >
+                <i className="fas fa-times"></i>
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                form="editProjectForm" 
+                className="confirm-btn" 
+                disabled={projectLoading || !newProject.projectName.trim()}
+              >
+                {projectLoading ? (
+                  <>
+                    <i className="fas fa-spinner fa-spin"></i>
+                    Updating...
+                  </>
+                ) : (
+                  <>
+                    <i className="fas fa-save"></i>
+                    Update Project
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmProject && (
+        <div className="modal-overlay" onClick={closeDeleteConfirmModal}>
+          <div className="modal small-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>
+                <i className="fas fa-exclamation-triangle"></i>
+                Confirm Delete
+              </h3>
+            </div>
+            <div className="modal-body">
+              {projectMessage && (
+                <div className={`message ${projectMessage.type}-message`} style={{ marginBottom: '1rem' }}>
+                  <i className={`fas ${projectMessage.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}`}></i>
+                  {projectMessage.text}
+                </div>
+              )}
+              <p>Are you sure you want to delete the project "<strong>{deleteConfirmProject.projectName}</strong>"?</p>
+              <p style={{ fontSize: '0.85rem', color: '#666' }}>This action cannot be undone.</p>
+            </div>
+            <div className="modal-footer">
+              <button 
+                type="button" 
+                className="cancel-btn" 
+                onClick={closeDeleteConfirmModal}
+                disabled={projectLoading}
+              >
+                <i className="fas fa-times"></i>
+                Cancel
+              </button>
+              <button 
+                type="button" 
+                className="confirm-btn" 
+                onClick={handleDeleteProject}
+                disabled={projectLoading}
+                style={{ background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' }}
+              >
+                {projectLoading ? (
+                  <>
+                    <i className="fas fa-spinner fa-spin"></i>
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <i className="fas fa-trash-alt"></i>
+                    Delete
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

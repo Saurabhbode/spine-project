@@ -1,13 +1,7 @@
--- Manual SQL script to create spine database and users table
--- Execute this script directly in MySQL if Flyway is not configured
+-- Flyway Migration V1: Create users and roles tables
+-- Database: spine
 
--- Step 1: Create database
-CREATE DATABASE IF NOT EXISTS spine CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- Step 2: Switch to spine database
-USE spine;
-
--- Step 3: Create users table
+-- Create users table
 CREATE TABLE IF NOT EXISTS users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
@@ -28,12 +22,7 @@ CREATE TABLE IF NOT EXISTS users (
     INDEX idx_created_at (created_at)
 );
 
--- Step 3b: Add role_id column if table already exists (for existing databases)
--- Run this if the users table already exists without role_id:
--- ALTER TABLE users ADD COLUMN role_id BIGINT DEFAULT 1 AFTER employee_number;
--- CREATE INDEX IF NOT EXISTS idx_role_id ON users(role_id);
-
--- Step 4: Create finance_roles table for role definitions
+-- Create finance_roles table for role definitions
 CREATE TABLE IF NOT EXISTS finance_roles (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     role_name VARCHAR(50) NOT NULL UNIQUE,
@@ -42,7 +31,7 @@ CREATE TABLE IF NOT EXISTS finance_roles (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Step 5: Insert default roles
+-- Insert default roles
 INSERT INTO
     finance_roles (id, role_name, description)
 VALUES (
@@ -67,14 +56,3 @@ VALUES (
     )
 ON DUPLICATE KEY UPDATE
     description = VALUES(description);
-
--- Step 6: Update existing users with NULL role_id to default USER role
-UPDATE users SET role_id = 1 WHERE role_id IS NULL;
-
--- Step 7: Verify table creation
-SHOW TABLES;
-
-DESCRIBE users;
-
--- Step 8: Verify finance_roles table
-SELECT * FROM finance_roles;

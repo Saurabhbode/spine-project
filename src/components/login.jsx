@@ -48,11 +48,9 @@ const Login = () => {
         
         if (user.department === "Finance") {
           // Finance users - redirect to Finance Manager Dashboard
-          alert("Login successful! Welcome to Finance Manager Dashboard.");
           navigate("/dashboard/finance-manager");
         } else {
           // Other users - redirect to landing page for now
-          alert("Login successful! Welcome to Spine.");
           navigate("/");
         }
       } else {

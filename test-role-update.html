@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Role Update Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .success { color: green; }
+        .error { color: red; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        input { padding: 5px; margin: 5px; width: 200px; }
+        .section-title { background: #e3f2fd; padding: 10px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Role Update Test Page</h1>
+    
+    <div class="test-section">
+        <h2 class="section-title">Step 1: Login</h2>
+        <input type="text" id="username" placeholder="Username" value="admin">
+        <input type="password" id="password" placeholder="Password" value="admin123">
+        <button onclick="testLogin()">Login</button>
+        <div id="login-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2 class="section-title">Step 2: Get Users</h2>
+        <button onclick="testGetUsers()">Get All Users</button>
+        <div id="users-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2 class="section-title">Step 3: Update Single User Role</h2>
+        <input type="number" id="single-user-id" placeholder="User ID" value="1">
+        <select id="single-user-role">
+            <option value="USER">USER</option>
+            <option value="ADMIN">ADMIN</option>
+            <option value="MANAGER">MANAGER</option>
+            <option value="FINANCE">FINANCE</option>
+        </select>
+        <button onclick="testUpdateSingleRole()">Update Single User Role</button>
+        <div id="single-update-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2 class="section-title">Step 4: Bulk Update User Roles</h2>
+        <input type="text" id="bulk-user-ids" placeholder="User IDs (comma-separated, e.g., 1,2,3)" value="1,2">
+        <select id="bulk-user-role">
+            <option value="USER">USER</option>
+            <option value="ADMIN">ADMIN</option>
+            <option value="MANAGER">MANAGER</option>
+            <option value="FINANCE">FINANCE</option>
+        </select>
+        <button onclick="testBulkUpdateRoles()">Bulk Update Roles</button>
+        <div id="bulk-update-result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api';
+        let authToken = null;
+
+        function logResult(elementId, success, message, data = null) {
+            const resultDiv = document.getElementById(elementId);
+            const className = success ? 'success' : 'error';
+            let html = `<p class="${className}"><strong>${message}</strong></p>`;
+            if (data) {
+                html += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            }
+            resultDiv.innerHTML = html;
+        }
+
+        async function testLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await response.json();
+                
+                if (data.success && data.accessToken) {
+                    authToken = data.accessToken;
+                    localStorage.setItem('accessToken', data.accessToken);
+                    logResult('login-result', true, 'Login successful! Token saved.');
+                } else {
+                    logResult('login-result', false, 'Login failed: ' + data.message);
+                }
+            } catch (error) {
+                logResult('login-result', false, 'Error: ' + error.message);
+            }
+        }
+
+        async function testGetUsers() {
+            const token = authToken || localStorage.getItem('accessToken');
+            if (!token) {
+                logResult('users-result', false, 'No token found. Please login first.');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/users`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const data = await response.json();
+                logResult('users-result', data.success, 
+                    data.success ? `Found ${data.total || 0} users` : 'Failed to get users', data);
+            } catch (error) {
+                logResult('users-result', false, 'Error: ' + error.message);
+            }
+        }
+
+        async function testUpdateSingleRole() {
+            const token = authToken || localStorage.getItem('accessToken');
+            if (!token) {
+                logResult('single-update-result', false, 'No token found. Please login first.');
+                return;
+            }
+
+            const userId = document.getElementById('single-user-id').value;
+            const role = document.getElementById('single-user-role').value;
+            
+            console.log(`Updating user ${userId} to role ${role}`);
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/users/${userId}/role`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ role })
+                });
+                
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                logResult('single-update-result', data.success, 
+                    data.success ? 'Role updated successfully!' : 'Failed: ' + data.message, data);
+                
+                // Refresh users to verify
+                if (data.success) {
+                    setTimeout(testGetUsers, 500);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                logResult('single-update-result', false, 'Error: ' + error.message);
+            }
+        }
+
+        async function testBulkUpdateRoles() {
+            const token = authToken || localStorage.getItem('accessToken');
+            if (!token) {
+                logResult('bulk-update-result', false, 'No token found. Please login first.');
+                return;
+            }
+
+            const userIdsStr = document.getElementById('bulk-user-ids').value;
+            const role = document.getElementById('bulk-user-role').value;
+            
+            // Parse user IDs
+            const userIds = userIdsStr.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+            
+            console.log(`Bulk updating users ${userIds} to role ${role}`);
+            console.log('Request body:', JSON.stringify({ userIds, role }));
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/users/roles`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ userIds, role })
+                });
+                
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                logResult('bulk-update-result', data.success, 
+                    data.success ? `Successfully updated ${data.updatedCount} users!` : 'Failed: ' + data.message, data);
+                
+                // Refresh users to verify
+                if (data.success) {
+                    setTimeout(testGetUsers, 500);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                logResult('bulk-update-result', false, 'Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
+
