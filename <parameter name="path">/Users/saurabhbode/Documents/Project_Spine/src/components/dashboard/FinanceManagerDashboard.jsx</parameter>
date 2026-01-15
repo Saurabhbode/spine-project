@@ -1,0 +1,40 @@
+<parameter name="content">import React, { useState } from 'react';
+import Sidebar from './finance-manager/components/Sidebar';
+import Dashboard from './finance-manager/pages/Dashboard';
+import Invoices from './finance-manager/pages/Invoices';
+import ProjectOverview from './finance-manager/pages/ProjectOverview';
+import EmployeesPage from './finance-manager/pages/Employees';
+import UsersPage from './finance-manager/pages/Users';
+import './finance-manager/FinanceManager.css';
+
+const FinanceManagerDashboard = () => {
+  const [activePage, setActivePage] = useState('dashboard');
+
+  const renderPage = () => {
+    switch (activePage) {
+      case 'dashboard':
+        return <Dashboard />;
+      case 'invoices':
+        return <Invoices />;
+      case 'project-overview':
+        return <ProjectOverview />;
+      case 'employees':
+        return <EmployeesPage />;
+      case 'users':
+        return <UsersPage />;
+      default:
+        return <Dashboard />;
+    }
+  };
+
+  return (
+    <div className="finance-manager-dashboard">
+      <Sidebar activePage={activePage} onPageChange={setActivePage} />
+      <div className="main-content">
+        {renderPage()}
+      </div>
+  );
+};
+
+export default FinanceManagerDashboard;
+</parameter>

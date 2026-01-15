@@ -107,12 +107,11 @@ public class FinanceRoleRepository {
         return role;
     }
 
-    // Check if role exists
+    // Check if role exists - optimized with LIMIT 1
     public boolean existsByName(String roleName) {
         try {
-            String sql = "SELECT COUNT(*) FROM finance_roles WHERE role_name = ?";
-            Integer count = jdbcTemplate.queryForObject(sql, Integer.class, roleName);
-            return count != null && count > 0;
+            String sql = "SELECT 1 FROM finance_roles WHERE role_name = ? LIMIT 1";
+            return jdbcTemplate.queryForObject(sql, Integer.class, roleName) != null;
         } catch (Exception e) {
             return false;
         }

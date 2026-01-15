@@ -3,7 +3,11 @@ package com.invoicingproject.spine.controller;
 import com.invoicingproject.spine.dto.EmployeeRequest;
 import com.invoicingproject.spine.dto.EmployeeResponse;
 import com.invoicingproject.spine.entity.Employee;
+import com.invoicingproject.spine.entity.EmployeeProject;
+import com.invoicingproject.spine.entity.Project;
+import com.invoicingproject.spine.repository.EmployeeProjectRepository;
 import com.invoicingproject.spine.repository.EmployeeRepository;
+import com.invoicingproject.spine.repository.ProjectRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -25,6 +30,12 @@ public class EmployeeController {
     @Autowired
     private EmployeeRepository employeeRepository;
 
+    @Autowired
+    private EmployeeProjectRepository employeeProjectRepository;
+
+    @Autowired
+    private ProjectRepository projectRepository;
+
     // Get all employees
     @GetMapping
     public ResponseEntity<List<EmployeeResponse>> getAllEmployees() {
@@ -36,6 +47,22 @@ public class EmployeeController {
             return ResponseEntity.ok(responses);
         } catch (Exception e) {
             logger.error("Error fetching employees", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // Get employees by project name
+    @GetMapping("/project/{projectName}")
+    public ResponseEntity<List<EmployeeResponse>> getEmployeesByProject(@PathVariable String projectName) {
+        try {
+            logger.info("Fetching employees for project: {}", projectName);
+            List<Employee> employees = employeeRepository.findByProject(projectName);
+            List<EmployeeResponse> responses = employees.stream()
+                    .map(this::convertToResponse)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(responses);
+        } catch (Exception e) {
+            logger.error("Error fetching employees for project: {}", projectName, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -79,9 +106,17 @@ public class EmployeeController {
             employee.setEmpId(request.getEmpId());
             employee.setName(request.getName());
             employee.setProject(request.getProject());
+            employee.setProjectType(request.getProjectType());
             employee.setEmployeeRole(request.getEmployeeRole());
+            employee.setBillableStatus(request.getBillableStatus());
+            employee.setBillingType(request.getBillingType());
+            employee.setStartDate(request.getStartDate());
 
             Employee savedEmployee = employeeRepository.save(employee);
+
+            // Handle multiple projects
+            saveEmployeeProjects(savedEmployee, request);
+
             EmployeeResponse response = convertToResponse(savedEmployee);
 
             logger.info("Employee created successfully with id: {}", savedEmployee.getId());
@@ -106,10 +141,23 @@ public class EmployeeController {
             employee.setEmpId(request.getEmpId());
             employee.setName(request.getName());
             employee.setProject(request.getProject());
+            employee.setProjectType(request.getProjectType());
             employee.setEmployeeRole(request.getEmployeeRole());
+            employee.setBillableStatus(request.getBillableStatus());
+            employee.setBillingType(request.getBillingType());
+            employee.setStartDate(request.getStartDate());
             employee.preUpdate();
 
             Employee savedEmployee = employeeRepository.save(employee);
+
+            // Handle multiple projects - update the junction table
+            if (request.getProjectIds() != null || request.getProjectNames() != null) {
+                // Delete existing employee-project associations
+                employeeProjectRepository.deleteByEmployeeId(savedEmployee.getId());
+                // Save new associations
+                saveEmployeeProjects(savedEmployee, request);
+            }
+
             return ResponseEntity.ok(convertToResponse(savedEmployee));
         } catch (Exception e) {
             logger.error("Error updating employee with id: {}", id, e);
@@ -121,6 +169,9 @@ public class EmployeeController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
         try {
+            // Delete employee-project associations first
+            employeeProjectRepository.deleteByEmployeeId(id);
+            // Delete the employee
             boolean deleted = employeeRepository.deleteById(id);
             if (deleted) {
                 return ResponseEntity.noContent().build();
@@ -132,15 +183,80 @@ public class EmployeeController {
         }
     }
 
+    // Helper method to save employee-project associations
+    private void saveEmployeeProjects(Employee employee, EmployeeRequest request) {
+        List<Long> projectIds = request.getProjectIds();
+        List<String> projectNames = request.getProjectNames();
+
+        if (projectIds != null && !projectIds.isEmpty()) {
+            // Save by project IDs
+            for (int i = 0; i < projectIds.size(); i++) {
+                Long projectId = projectIds.get(i);
+                EmployeeProject ep = new EmployeeProject();
+                ep.setEmployeeId(employee.getId());
+                ep.setProjectId(projectId);
+                ep.setAllocationPercentage(new java.math.BigDecimal("100.00"));
+                ep.setStartDate(
+                        employee.getStartDate() != null ? java.sql.Date.valueOf(employee.getStartDate()) : null);
+                ep.setIsPrimary(i == 0); // First project is primary
+                employeeProjectRepository.save(ep);
+            }
+        } else if (projectNames != null && !projectNames.isEmpty()) {
+            // Save by project names (for backward compatibility)
+            for (int i = 0; i < projectNames.size(); i++) {
+                String projectName = projectNames.get(i);
+                Optional<Project> projectOpt = projectRepository.findByProjectName(projectName);
+                if (projectOpt.isPresent()) {
+                    EmployeeProject ep = new EmployeeProject();
+                    ep.setEmployeeId(employee.getId());
+                    ep.setProjectId(projectOpt.get().getId());
+                    ep.setAllocationPercentage(new java.math.BigDecimal("100.00"));
+                    ep.setStartDate(
+                            employee.getStartDate() != null ? java.sql.Date.valueOf(employee.getStartDate()) : null);
+                    ep.setIsPrimary(i == 0);
+                    employeeProjectRepository.save(ep);
+                }
+            }
+        }
+    }
+
     private EmployeeResponse convertToResponse(Employee employee) {
         EmployeeResponse response = new EmployeeResponse();
         response.setId(employee.getId());
         response.setEmpId(employee.getEmpId());
         response.setName(employee.getName());
         response.setProject(employee.getProject());
+        response.setProjectType(employee.getProjectType());
         response.setEmployeeRole(employee.getEmployeeRole());
+        response.setBillableStatus(employee.getBillableStatus());
+        response.setBillingType(employee.getBillingType());
+        response.setStartDate(employee.getStartDate());
+        response.setTenure(employee.getTenure());
         response.setCreatedAt(employee.getCreatedAt());
         response.setUpdatedAt(employee.getUpdatedAt());
+
+        // Load employee projects
+        List<EmployeeProject> employeeProjects = employeeProjectRepository.findByEmployeeId(employee.getId());
+        List<String> projectNames = new ArrayList<>();
+        List<Long> projectIds = new ArrayList<>();
+
+        for (EmployeeProject ep : employeeProjects) {
+            // Get project name from repository
+            Optional<Project> projectOpt = projectRepository.findById(ep.getProjectId());
+            if (projectOpt.isPresent()) {
+                projectNames.add(projectOpt.get().getProjectName());
+                projectIds.add(ep.getProjectId());
+            }
+        }
+
+        response.setProjects(projectNames);
+        response.setProjectIds(projectIds);
+
+        // For backward compatibility, set 'project' to comma-separated list
+        if (!projectNames.isEmpty()) {
+            response.setProject(String.join(", ", projectNames));
+        }
+
         return response;
     }
 }

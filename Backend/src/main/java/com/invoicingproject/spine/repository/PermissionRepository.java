@@ -122,12 +122,11 @@ public class PermissionRepository {
         }
     }
 
-    // Check if permission exists by name
+    // Check if permission exists by name - optimized with LIMIT 1
     public boolean existsByName(String permissionName) {
         try {
-            String sql = "SELECT COUNT(*) FROM permissions WHERE permission_name = ?";
-            Integer count = jdbcTemplate.queryForObject(sql, Integer.class, permissionName);
-            return count != null && count > 0;
+            String sql = "SELECT 1 FROM permissions WHERE permission_name = ? LIMIT 1";
+            return jdbcTemplate.queryForObject(sql, Integer.class, permissionName) != null;
         } catch (Exception e) {
             return false;
         }

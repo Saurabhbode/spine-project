@@ -15,18 +15,31 @@ The filter buttons are implemented correctly, but projects are created without a
 
 ### Backend Changes
 
-- [ ] 1. Add `projectType` field to `ProjectRequest.java` DTO with getter/setter
+- [x] 1. Add `projectType` field to `ProjectRequest.java` DTO with getter/setter
 
-### Frontend Changes
+### Frontend Changes (FinanceManagerDashboard)
 
-- [ ] 2. Add `projectType` to the `newProject` state in `FinanceManagerDashboard.jsx` (default: "FTE")
-- [ ] 3. Add a project type dropdown in Add Project modal
-- [ ] 4. Add a project type dropdown in Edit Project modal
-- [ ] 5. Include `projectType` in the `handleAddProject` API call
-- [ ] 6. Include `projectType` in the `handleUpdateProject` API call
-- [ ] 7. Populate `projectType` in `handleEditProject` when loading project data
+- [x] 2. Add `projectType` to the `newProject` state in `FinanceManagerDashboard.jsx` (default: "FTE")
+- [x] 3. Add a project type dropdown in Add Project modal
+- [x] 4. Add a project type dropdown in Edit Project modal
+- [x] 5. Include `projectType` in the `handleAddProject` API call
+- [x] 6. Include `projectType` in the `handleUpdateProject` API call
+- [x] 7. Populate `projectType` in `handleEditProject` when loading project data
 
-## Files to Modify
+### Frontend Changes (Employees Page)
+
+- [x] 8. Add `projectTypeFilter` state to Employees.jsx
+- [x] 9. Update `getFilteredEmployees()` to filter by project type
+- [x] 10. Add project type filter buttons (All Types, Contingency, FTE)
+- [x] 11. Add Project Type column to employees table
+- [x] 12. Display project type badge with color coding (FTE: blue, Contingency: orange)
+
+## Status: ✅ COMPLETED
+
+All implementation tasks have been completed. The project type filter is now fully functional on both the Finance Manager Dashboard and the Employees page.
+
+## Files Modified
 
 - `/Users/saurabhbode/Documents/Project_Spine/Backend/src/main/java/com/invoicingproject/spine/dto/ProjectRequest.java`
 - `/Users/saurabhbode/Documents/Project_Spine/src/components/dashboard/FinanceManagerDashboard.jsx`
+- `/Users/saurabhbode/Documents/Project_Spine/src/components/dashboard/Employees.jsx`

@@ -1,0 +1,14 @@
+<parameter name="content">import React from 'react';
+
+const Employees = () => {
+  return (
+    <div>
+      <h1>Employees</h1>
+      <p>Manage employees here</p>
+      {/* Employees content here */}
+    </div>
+  );
+};
+
+export default Employees;
+</parameter>

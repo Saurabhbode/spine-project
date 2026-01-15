@@ -1,0 +1,38 @@
+<parameter name="content"># Finance Manager Dashboard Structure Plan
+
+## Overview
+This document outlines the plan to create separate files for each button/page in the Finance Manager Dashboard sidebar.
+
+## Current Sidebar Structure (to be determined)
+Need to identify the sidebar buttons from FinanceManagerDashboard.jsx
+
+## Proposed File Structure
+
+```
+src/components/dashboard/finance-manager/
+├── FinanceManagerDashboard.jsx    # Main dashboard with sidebar navigation
+├── pages/
+│   ├── Overview.jsx              # Dashboard overview/home page
+│   ├── Invoices.jsx              # Invoice management
+│   ├── Expenses.jsx              # Expense tracking
+│   ├── Reports.jsx               # Financial reports
+│   ├── Settings.jsx              # Finance settings
+│   └── Payroll.jsx               # Payroll management (if applicable)
+└── components/
+    ├── Sidebar.jsx               # Reusable sidebar component
+    ├── Header.jsx                # Dashboard header
+    └── StatsCard.jsx             # Reusable stats card component
+```
+
+## Implementation Steps
+
+1. Create the directory structure
+2. Create each page component
+3. Update FinanceManagerDashboard.jsx to use the new file structure
+4. Add proper routing/navigation between pages
+
+## Notes
+- Each page should be self-contained with its own styles
+- Use shared components where possible to avoid duplication
+- Ensure consistent layout across all pages
+</parameter>
