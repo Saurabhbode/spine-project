@@ -242,8 +242,8 @@ const FinanceManagerDashboard = () => {
     setInvoiceMessage(null);
     
     try {
-      // Fetch employees working on this project
-      const employees = await EmployeeService.getEmployeesByProject(project.projectName);
+      // Fetch employees working on this project using junction table endpoint
+      const employees = await EmployeeService.getEmployeesByProjectFromJunction(project.projectName);
       setProjectEmployees(employees);
       
       setInvoiceFormData({

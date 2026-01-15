@@ -51,7 +51,8 @@ public class EmployeeController {
         }
     }
 
-    // Get employees by project name
+    // Get employees by project name (backward compatibility - uses old project
+    // column)
     @GetMapping("/project/{projectName}")
     public ResponseEntity<List<EmployeeResponse>> getEmployeesByProject(@PathVariable String projectName) {
         try {
@@ -63,6 +64,75 @@ public class EmployeeController {
             return ResponseEntity.ok(responses);
         } catch (Exception e) {
             logger.error("Error fetching employees for project: {}", projectName, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // Get employees by project ID (uses employee_projects junction table)
+    @GetMapping("/project-id/{projectId}")
+    public ResponseEntity<List<EmployeeResponse>> getEmployeesByProjectId(@PathVariable Long projectId) {
+        try {
+            logger.info("Fetching employees for project ID: {}", projectId);
+            // Get all employee-project associations for this project
+            List<EmployeeProject> employeeProjects = employeeProjectRepository.findByProjectId(projectId);
+
+            // Get unique employee IDs
+            List<Long> employeeIds = employeeProjects.stream()
+                    .map(EmployeeProject::getEmployeeId)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            // Fetch employee details
+            List<EmployeeResponse> responses = new ArrayList<>();
+            for (Long employeeId : employeeIds) {
+                Optional<Employee> employeeOpt = employeeRepository.findById(employeeId);
+                if (employeeOpt.isPresent()) {
+                    responses.add(convertToResponse(employeeOpt.get()));
+                }
+            }
+
+            return ResponseEntity.ok(responses);
+        } catch (Exception e) {
+            logger.error("Error fetching employees for project ID: {}", projectId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // Get employees by project name using junction table (new approach)
+    @GetMapping("/project-junction/{projectName}")
+    public ResponseEntity<List<EmployeeResponse>> getEmployeesByProjectFromJunction(@PathVariable String projectName) {
+        try {
+            logger.info("Fetching employees for project from junction table: {}", projectName);
+
+            // Find project by name first
+            Optional<Project> projectOpt = projectRepository.findByProjectName(projectName);
+            if (projectOpt.isEmpty()) {
+                return ResponseEntity.ok(new ArrayList<>());
+            }
+
+            Long projectId = projectOpt.get().getId();
+
+            // Get all employee-project associations for this project
+            List<EmployeeProject> employeeProjects = employeeProjectRepository.findByProjectId(projectId);
+
+            // Get unique employee IDs
+            List<Long> employeeIds = employeeProjects.stream()
+                    .map(EmployeeProject::getEmployeeId)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            // Fetch employee details
+            List<EmployeeResponse> responses = new ArrayList<>();
+            for (Long employeeId : employeeIds) {
+                Optional<Employee> employeeOpt = employeeRepository.findById(employeeId);
+                if (employeeOpt.isPresent()) {
+                    responses.add(convertToResponse(employeeOpt.get()));
+                }
+            }
+
+            return ResponseEntity.ok(responses);
+        } catch (Exception e) {
+            logger.error("Error fetching employees for project from junction: {}", projectName, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
