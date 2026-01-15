@@ -26,7 +26,18 @@ public class EmployeeRepository {
             employee.setEmpId(rs.getString("emp_id"));
             employee.setName(rs.getString("name"));
             employee.setProject(rs.getString("project"));
+            employee.setProjectType(rs.getString("project_type"));
             employee.setEmployeeRole(rs.getString("employee_role"));
+            employee.setBillableStatus(rs.getBoolean("billable_status"));
+            employee.setBillingType(rs.getString("billing_type"));
+
+            // Handle date fields
+            java.sql.Date startDate = rs.getDate("start_date");
+            if (startDate != null) {
+                employee.setStartDate(startDate.toLocalDate());
+            }
+
+            employee.setTenure(rs.getString("tenure"));
 
             // Handle timestamps
             java.sql.Timestamp createdAt = rs.getTimestamp("created_at");
@@ -70,16 +81,16 @@ public class EmployeeRepository {
         return employees.isEmpty() ? Optional.empty() : Optional.of(employees.get(0));
     }
 
+    // Check if employee exists by ID - optimized with LIMIT 1
     public boolean existsById(Long id) {
-        String sql = "SELECT COUNT(*) FROM employees WHERE id = ?";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
-        return count != null && count > 0;
+        String sql = "SELECT 1 FROM employees WHERE id = ? LIMIT 1";
+        return jdbcTemplate.queryForObject(sql, Integer.class, id) != null;
     }
 
+    // Check if employee exists by emp_id - optimized with LIMIT 1
     public boolean existsByEmpId(String empId) {
-        String sql = "SELECT COUNT(*) FROM employees WHERE emp_id = ?";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, empId);
-        return count != null && count > 0;
+        String sql = "SELECT 1 FROM employees WHERE emp_id = ? LIMIT 1";
+        return jdbcTemplate.queryForObject(sql, Integer.class, empId) != null;
     }
 
     public Employee save(Employee employee) {

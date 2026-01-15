@@ -1,0 +1,8 @@
+<parameter name="content">export { default as FinanceManagerDashboard } from './FinanceManagerDashboard';
+export { default as Sidebar } from './components/Sidebar';
+export { default as Dashboard } from './pages/Dashboard';
+export { default as Invoices } from './pages/Invoices';
+export { default as ProjectOverview } from './pages/ProjectOverview';
+export { default as EmployeesPage } from './pages/Employees';
+export { default as UsersPage } from './pages/Users';
+</parameter>

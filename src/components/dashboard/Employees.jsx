@@ -10,12 +10,16 @@ const Employees = () => {
   const [showEditEmployeeModal, setShowEditEmployeeModal] = useState(false);
   const [showManageRolesModal, setShowManageRolesModal] = useState(false);
   const [employeeFilter, setEmployeeFilter] = useState("all");
+  const [projectTypeFilter, setProjectTypeFilter] = useState("all"); // 'all', 'contingency', 'fte'
   const [searchTerm, setSearchTerm] = useState("");
   const [newEmployee, setNewEmployee] = useState({
     empId: "",
     name: "",
     project: "",
-    employeeRole: ""
+    projectType: "",
+    employeeRole: "",
+    billableStatus: null,
+    startDate: ""
   });
   const [editingEmployee, setEditingEmployee] = useState(null);
   
@@ -118,6 +122,17 @@ const Employees = () => {
   const getFilteredEmployees = () => {
     let filtered = employees;
 
+    // Apply project type filter first
+    if (projectTypeFilter !== "all") {
+      const filteredProjects = projects.filter(p => 
+        p.projectType === (projectTypeFilter === "contingency" ? "Contingency" : "FTE")
+      );
+      const projectNames = filteredProjects.map(p => p.projectName);
+      filtered = filtered.filter(emp => 
+        projectNames.includes(emp.project) || emp.project === "Trainee" || emp.project === "No Project"
+      );
+    }
+
     // Apply project filter
     if (employeeFilter !== "all" && !["Trainee", "No Project"].includes(employeeFilter)) {
       filtered = filtered.filter(emp => emp.project === employeeFilter);
@@ -157,14 +172,17 @@ const Employees = () => {
         empId: newEmployee.empId,
         name: newEmployee.name,
         project: newEmployee.project,
-        employeeRole: newEmployee.employeeRole
+        projectType: newEmployee.projectType,
+        employeeRole: newEmployee.employeeRole,
+        billableStatus: newEmployee.billableStatus,
+        startDate: newEmployee.startDate ? newEmployee.startDate : null
       };
       
       const response = await EmployeeService.createEmployee(employeeData);
       if (response) {
         setEmployees([...employees, response]);
         setShowAddEmployeeModal(false);
-        setNewEmployee({ empId: "", name: "", project: "", employeeRole: "" });
+        setNewEmployee({ empId: "", name: "", project: "", projectType: "", employeeRole: "", billableStatus: null, startDate: "" });
       }
     } catch (error) {
       console.error("Error adding employee:", error);
@@ -188,7 +206,10 @@ const Employees = () => {
         empId: editingEmployee.empId,
         name: editingEmployee.name,
         project: editingEmployee.project,
-        employeeRole: editingEmployee.employeeRole
+        projectType: editingEmployee.projectType,
+        employeeRole: editingEmployee.employeeRole,
+        billableStatus: editingEmployee.billableStatus,
+        startDate: editingEmployee.startDate ? editingEmployee.startDate : null
       };
       
       const response = await EmployeeService.updateEmployee(editingEmployee.id, employeeData);
@@ -249,14 +270,17 @@ const Employees = () => {
       empId: `EMP${String(maxId + 1).padStart(3, '0')}`,
       name: "",
       project: "",
-      employeeRole: ""
+      projectType: "",
+      employeeRole: "",
+      billableStatus: null,
+      startDate: ""
     });
     setShowAddEmployeeModal(true);
   };
 
   const closeAddEmployeeModal = () => {
     setShowAddEmployeeModal(false);
-    setNewEmployee({ empId: "", name: "", project: "", employeeRole: "" });
+    setNewEmployee({ empId: "", name: "", project: "", projectType: "", employeeRole: "", billableStatus: null, startDate: "" });
   };
 
   // ==============================
@@ -465,6 +489,32 @@ const Employees = () => {
             <option value="No Project">No Project</option>
           </select>
         </div>
+        <div className="project-type-filters" style={{ display: 'flex', gap: '0.5rem' }}>
+          <button 
+            className={`action-btn ${projectTypeFilter === 'all' ? 'primary' : 'secondary'}`}
+            onClick={() => setProjectTypeFilter('all')}
+            style={{ padding: '10px 16px', fontSize: '0.9rem' }}
+          >
+            <i className="fas fa-list"></i>
+            All Types
+          </button>
+          <button 
+            className={`action-btn ${projectTypeFilter === 'contingency' ? 'primary' : 'secondary'}`}
+            onClick={() => setProjectTypeFilter('contingency')}
+            style={{ padding: '10px 16px', fontSize: '0.9rem' }}
+          >
+            <i className="fas fa-handshake"></i>
+            Contingency
+          </button>
+          <button 
+            className={`action-btn ${projectTypeFilter === 'fte' ? 'primary' : 'secondary'}`}
+            onClick={() => setProjectTypeFilter('fte')}
+            style={{ padding: '10px 16px', fontSize: '0.9rem' }}
+          >
+            <i className="fas fa-users"></i>
+            FTE
+          </button>
+        </div>
       </div>
 
       {/* Employees Table */}
@@ -485,8 +535,24 @@ const Employees = () => {
                 Project
               </th>
               <th style={{ padding: '1rem', textAlign: 'left', color: 'white', fontWeight: '600' }}>
+                <i className="fas fa-tag" style={{ marginRight: '8px' }}></i>
+                Type
+              </th>
+              <th style={{ padding: '1rem', textAlign: 'left', color: 'white', fontWeight: '600' }}>
                 <i className="fas fa-user-tag" style={{ marginRight: '8px' }}></i>
                 Employee Role
+              </th>
+              <th style={{ padding: '1rem', textAlign: 'left', color: 'white', fontWeight: '600' }}>
+                <i className="fas fa-money-bill-wave" style={{ marginRight: '8px' }}></i>
+                Billable Type
+              </th>
+              <th style={{ padding: '1rem', textAlign: 'left', color: 'white', fontWeight: '600' }}>
+                <i className="fas fa-calendar-alt" style={{ marginRight: '8px' }}></i>
+                Start Date
+              </th>
+              <th style={{ padding: '1rem', textAlign: 'left', color: 'white', fontWeight: '600' }}>
+                <i className="fas fa-clock" style={{ marginRight: '8px' }}></i>
+                Tenure
               </th>
               <th style={{ padding: '1rem', textAlign: 'center', color: 'white', fontWeight: '600' }}>
                 <i className="fas fa-cogs" style={{ marginRight: '8px' }}></i>
@@ -497,20 +563,25 @@ const Employees = () => {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="5" style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
+                <td colSpan="9" style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
                   <i className="fas fa-spinner fa-spin" style={{ fontSize: '2rem', marginBottom: '1rem' }}></i>
                   <p>Loading employees...</p>
                 </td>
               </tr>
             ) : getFilteredEmployees().length === 0 ? (
               <tr>
-                <td colSpan="5" style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
+                <td colSpan="9" style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
                   <i className="fas fa-users" style={{ fontSize: '2rem', marginBottom: '1rem', color: '#ddd' }}></i>
                   <p>No employees found</p>
                 </td>
               </tr>
             ) : (
-              getFilteredEmployees().map((employee, index) => (
+              getFilteredEmployees().map((employee, index) => {
+                // Find project type for this employee
+                const project = projects.find(p => p.projectName === employee.project);
+                const projectType = project?.projectType || (employee.project === "Trainee" || employee.project === "No Project" ? "N/A" : "-");
+                
+                return (
                 <tr 
                   key={employee.id}
                   style={{ 
@@ -551,6 +622,18 @@ const Employees = () => {
                   </td>
                   <td style={{ padding: '1rem', color: '#333' }}>
                     <span style={{ 
+                      background: projectType === 'FTE' ? '#e3f2fd' : projectType === 'Contingency' ? '#fff3e0' : '#f5f5f5',
+                      color: projectType === 'FTE' ? '#1976d2' : projectType === 'Contingency' ? '#f57c00' : '#999',
+                      padding: '4px 12px',
+                      borderRadius: '20px',
+                      fontSize: '0.85rem',
+                      fontWeight: '500'
+                    }}>
+                      {projectType}
+                    </span>
+                  </td>
+                  <td style={{ padding: '1rem', color: '#333' }}>
+                    <span style={{ 
                       background: '#f3e5f5',
                       color: '#7b1fa2',
                       padding: '4px 12px',
@@ -558,6 +641,33 @@ const Employees = () => {
                       fontSize: '0.85rem'
                     }}>
                       {employee.employeeRole || 'N/A'}
+                    </span>
+                  </td>
+                  <td style={{ padding: '1rem', color: '#333' }}>
+                    <span style={{ 
+                      background: employee.billableStatus === true ? '#e8f5e9' : employee.billableStatus === false ? '#ffebee' : '#f5f5f5',
+                      color: employee.billableStatus === true ? '#2e7d32' : employee.billableStatus === false ? '#c62828' : '#999',
+                      padding: '4px 12px',
+                      borderRadius: '20px',
+                      fontSize: '0.85rem',
+                      fontWeight: '500'
+                    }}>
+                      {employee.billableStatus === true ? 'Billable' : employee.billableStatus === false ? 'Non-Billable' : 'N/A'}
+                    </span>
+                  </td>
+                  <td style={{ padding: '1rem', color: '#333' }}>
+                    {employee.startDate ? new Date(employee.startDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}
+                  </td>
+                  <td style={{ padding: '1rem', color: '#333', fontSize: '0.9rem' }}>
+                    <span style={{
+                      background: '#e3f2fd',
+                      color: '#1565c0',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      fontSize: '0.8rem',
+                      fontWeight: '500'
+                    }}>
+                      {employee.tenure || 'N/A'}
                     </span>
                   </td>
                   <td style={{ padding: '1rem', textAlign: 'center' }}>
@@ -581,7 +691,8 @@ const Employees = () => {
                     </div>
                   </td>
                 </tr>
-              ))
+                );
+              })
             )}
           </tbody>
         </table>
@@ -602,7 +713,7 @@ const Employees = () => {
                 <div className="input-group">
                   <label htmlFor="empId">
                     <i className="fas fa-id-badge"></i>
-                    Employee ID
+                    Employee ID <span className="required">*</span>
                   </label>
                   <input
                     type="text"
@@ -610,10 +721,8 @@ const Employees = () => {
                     name="empId"
                     value={newEmployee.empId}
                     onChange={handleInputChange}
-                    placeholder="EMP001"
+                    placeholder="Enter employee ID (e.g., EMP001)"
                     required
-                    readOnly
-                    style={{ backgroundColor: '#f5f5f5' }}
                   />
                 </div>
 
@@ -665,6 +774,24 @@ const Employees = () => {
                 </div>
 
                 <div className="input-group">
+                  <label htmlFor="projectType">
+                    <i className="fas fa-tag"></i>
+                    Project Type
+                  </label>
+                  <select
+                    id="projectType"
+                    name="projectType"
+                    value={newEmployee.projectType}
+                    onChange={handleInputChange}
+                    style={{ width: '100%', padding: '12px', border: '2px solid #e1e5e9', borderRadius: '8px' }}
+                  >
+                    <option value="">Select project type</option>
+                    <option value="FTE">FTE</option>
+                    <option value="Contingency">Contingency</option>
+                  </select>
+                </div>
+
+                <div className="input-group">
                   <label htmlFor="employeeRole">
                     <i className="fas fa-user-tag"></i>
                     Employee Role <span className="required">*</span>
@@ -682,6 +809,42 @@ const Employees = () => {
                       <option key={role} value={role}>{role}</option>
                     ))}
                   </select>
+                </div>
+
+                <div className="input-group">
+                  <label htmlFor="billableStatus">
+                    <i className="fas fa-money-bill-wave"></i>
+                    Billable Type
+                  </label>
+                  <select
+                    id="billableStatus"
+                    name="billableStatus"
+                    value={newEmployee.billableStatus === null ? '' : newEmployee.billableStatus}
+                    onChange={(e) => {
+                      const value = e.target.value === '' ? null : e.target.value === 'true';
+                      setNewEmployee(prev => ({ ...prev, billableStatus: value }));
+                    }}
+                    style={{ width: '100%', padding: '12px', border: '2px solid #e1e5e9', borderRadius: '8px' }}
+                  >
+                    <option value="">Select billable type</option>
+                    <option value="true">Billable</option>
+                    <option value="false">Non-Billable</option>
+                  </select>
+                </div>
+
+                <div className="input-group">
+                  <label htmlFor="startDate">
+                    <i className="fas fa-calendar-alt"></i>
+                    Start Date
+                  </label>
+                  <input
+                    type="date"
+                    id="startDate"
+                    name="startDate"
+                    value={newEmployee.startDate}
+                    onChange={handleInputChange}
+                    style={{ width: '100%', padding: '12px', border: '2px solid #e1e5e9', borderRadius: '8px' }}
+                  />
                 </div>
               </form>
             </div>
@@ -723,7 +886,7 @@ const Employees = () => {
                 <div className="input-group">
                   <label htmlFor="editEmpId">
                     <i className="fas fa-id-badge"></i>
-                    Employee ID
+                    Employee ID <span className="required">*</span>
                   </label>
                   <input
                     type="text"
@@ -731,10 +894,8 @@ const Employees = () => {
                     name="empId"
                     value={editingEmployee.empId}
                     onChange={handleEditInputChange}
-                    placeholder="EMP001"
+                    placeholder="Enter employee ID"
                     required
-                    readOnly
-                    style={{ backgroundColor: '#f5f5f5' }}
                   />
                 </div>
 
@@ -786,6 +947,24 @@ const Employees = () => {
                 </div>
 
                 <div className="input-group">
+                  <label htmlFor="editProjectType">
+                    <i className="fas fa-tag"></i>
+                    Project Type
+                  </label>
+                  <select
+                    id="editProjectType"
+                    name="projectType"
+                    value={editingEmployee.projectType || ''}
+                    onChange={handleEditInputChange}
+                    style={{ width: '100%', padding: '12px', border: '2px solid #e1e5e9', borderRadius: '8px' }}
+                  >
+                    <option value="">Select project type</option>
+                    <option value="FTE">FTE</option>
+                    <option value="Contingency">Contingency</option>
+                  </select>
+                </div>
+
+                <div className="input-group">
                   <label htmlFor="editEmployeeRole">
                     <i className="fas fa-user-tag"></i>
                     Employee Role <span className="required">*</span>
@@ -803,6 +982,42 @@ const Employees = () => {
                       <option key={role} value={role}>{role}</option>
                     ))}
                   </select>
+                </div>
+
+                <div className="input-group">
+                  <label htmlFor="editBillableStatus">
+                    <i className="fas fa-money-bill-wave"></i>
+                    Billable Type
+                  </label>
+                  <select
+                    id="editBillableStatus"
+                    name="billableStatus"
+                    value={editingEmployee.billableStatus === null ? '' : editingEmployee.billableStatus}
+                    onChange={(e) => {
+                      const value = e.target.value === '' ? null : e.target.value === 'true';
+                      setEditingEmployee(prev => ({ ...prev, billableStatus: value }));
+                    }}
+                    style={{ width: '100%', padding: '12px', border: '2px solid #e1e5e9', borderRadius: '8px' }}
+                  >
+                    <option value="">Select billable type</option>
+                    <option value="true">Billable</option>
+                    <option value="false">Non-Billable</option>
+                  </select>
+                </div>
+
+                <div className="input-group">
+                  <label htmlFor="editStartDate">
+                    <i className="fas fa-calendar-alt"></i>
+                    Start Date
+                  </label>
+                  <input
+                    type="date"
+                    id="editStartDate"
+                    name="startDate"
+                    value={editingEmployee.startDate || ''}
+                    onChange={handleEditInputChange}
+                    style={{ width: '100%', padding: '12px', border: '2px solid #e1e5e9', borderRadius: '8px' }}
+                  />
                 </div>
               </form>
             </div>

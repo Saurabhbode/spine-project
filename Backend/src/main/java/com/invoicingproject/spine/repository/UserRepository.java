@@ -88,34 +88,31 @@ public class UserRepository {
                 }
         }
 
-        // Check if username exists
+        // Check if username exists - optimized with LIMIT 1
         public boolean existsByUsername(String username) {
                 try {
-                        String sql = "SELECT COUNT(*) FROM users WHERE username = ?";
-                        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, username);
-                        return count != null && count > 0;
+                        String sql = "SELECT 1 FROM users WHERE username = ? LIMIT 1";
+                        return jdbcTemplate.queryForObject(sql, Integer.class, username) != null;
                 } catch (Exception e) {
                         return false;
                 }
         }
 
-        // Check if email exists
+        // Check if email exists - optimized with LIMIT 1
         public boolean existsByEmail(String email) {
                 try {
-                        String sql = "SELECT COUNT(*) FROM users WHERE email = ?";
-                        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, email);
-                        return count != null && count > 0;
+                        String sql = "SELECT 1 FROM users WHERE email = ? LIMIT 1";
+                        return jdbcTemplate.queryForObject(sql, Integer.class, email) != null;
                 } catch (Exception e) {
                         return false;
                 }
         }
 
-        // Check if employee number exists
+        // Check if employee number exists - optimized with LIMIT 1
         public boolean existsByEmployeeNumber(String employeeNumber) {
                 try {
-                        String sql = "SELECT COUNT(*) FROM users WHERE employee_number = ?";
-                        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, employeeNumber);
-                        return count != null && count > 0;
+                        String sql = "SELECT 1 FROM users WHERE employee_number = ? LIMIT 1";
+                        return jdbcTemplate.queryForObject(sql, Integer.class, employeeNumber) != null;
                 } catch (Exception e) {
                         return false;
                 }

@@ -62,10 +62,10 @@ public class ProjectCategoryRepository {
         return categories.isEmpty() ? Optional.empty() : Optional.of(categories.get(0));
     }
 
+    // Check if category exists by ID - optimized with LIMIT 1
     public boolean existsById(Long id) {
-        String sql = "SELECT COUNT(*) FROM project_category WHERE id = ?";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
-        return count != null && count > 0;
+        String sql = "SELECT 1 FROM project_category WHERE id = ? LIMIT 1";
+        return jdbcTemplate.queryForObject(sql, Integer.class, id) != null;
     }
 
     public ProjectCategory save(ProjectCategory category) {

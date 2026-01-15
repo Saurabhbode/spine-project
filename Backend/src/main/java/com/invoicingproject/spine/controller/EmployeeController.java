@@ -40,6 +40,22 @@ public class EmployeeController {
         }
     }
 
+    // Get employees by project name
+    @GetMapping("/project/{projectName}")
+    public ResponseEntity<List<EmployeeResponse>> getEmployeesByProject(@PathVariable String projectName) {
+        try {
+            logger.info("Fetching employees for project: {}", projectName);
+            List<Employee> employees = employeeRepository.findByProject(projectName);
+            List<EmployeeResponse> responses = employees.stream()
+                    .map(this::convertToResponse)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(responses);
+        } catch (Exception e) {
+            logger.error("Error fetching employees for project: {}", projectName, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     // Get employee by ID
     @GetMapping("/{id}")
     public ResponseEntity<EmployeeResponse> getEmployeeById(@PathVariable Long id) {
@@ -79,7 +95,11 @@ public class EmployeeController {
             employee.setEmpId(request.getEmpId());
             employee.setName(request.getName());
             employee.setProject(request.getProject());
+            employee.setProjectType(request.getProjectType());
             employee.setEmployeeRole(request.getEmployeeRole());
+            employee.setBillableStatus(request.getBillableStatus());
+            employee.setBillingType(request.getBillingType());
+            employee.setStartDate(request.getStartDate());
 
             Employee savedEmployee = employeeRepository.save(employee);
             EmployeeResponse response = convertToResponse(savedEmployee);
@@ -106,7 +126,11 @@ public class EmployeeController {
             employee.setEmpId(request.getEmpId());
             employee.setName(request.getName());
             employee.setProject(request.getProject());
+            employee.setProjectType(request.getProjectType());
             employee.setEmployeeRole(request.getEmployeeRole());
+            employee.setBillableStatus(request.getBillableStatus());
+            employee.setBillingType(request.getBillingType());
+            employee.setStartDate(request.getStartDate());
             employee.preUpdate();
 
             Employee savedEmployee = employeeRepository.save(employee);
@@ -138,7 +162,12 @@ public class EmployeeController {
         response.setEmpId(employee.getEmpId());
         response.setName(employee.getName());
         response.setProject(employee.getProject());
+        response.setProjectType(employee.getProjectType());
         response.setEmployeeRole(employee.getEmployeeRole());
+        response.setBillableStatus(employee.getBillableStatus());
+        response.setBillingType(employee.getBillingType());
+        response.setStartDate(employee.getStartDate());
+        response.setTenure(employee.getTenure());
         response.setCreatedAt(employee.getCreatedAt());
         response.setUpdatedAt(employee.getUpdatedAt());
         return response;

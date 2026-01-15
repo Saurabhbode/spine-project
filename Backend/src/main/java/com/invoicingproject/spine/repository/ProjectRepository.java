@@ -98,16 +98,16 @@ public class ProjectRepository {
         return projects.isEmpty() ? Optional.empty() : Optional.of(projects.get(0));
     }
 
+    // Check if project exists by ID - optimized with LIMIT 1
     public boolean existsById(Long id) {
-        String sql = "SELECT COUNT(*) FROM projects WHERE id = ?";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
-        return count != null && count > 0;
+        String sql = "SELECT 1 FROM projects WHERE id = ? LIMIT 1";
+        return jdbcTemplate.queryForObject(sql, Integer.class, id) != null;
     }
 
+    // Check if project exists by code - optimized with LIMIT 1
     public boolean existsByCode(String projectCode) {
-        String sql = "SELECT COUNT(*) FROM projects WHERE project_code = ?";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, projectCode);
-        return count != null && count > 0;
+        String sql = "SELECT 1 FROM projects WHERE project_code = ? LIMIT 1";
+        return jdbcTemplate.queryForObject(sql, Integer.class, projectCode) != null;
     }
 
     public Project save(Project project) {

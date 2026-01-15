@@ -91,6 +91,20 @@ const EmployeeService = {
       throw error;
     }
   },
+
+  // Get employees by project ID
+  async getEmployeesByProject(projectId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/employees/project/${projectId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch employees for project');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching employees by project:', error);
+      throw error;
+    }
+  },
 };
 
 export default EmployeeService;
