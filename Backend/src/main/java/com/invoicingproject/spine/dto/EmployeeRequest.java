@@ -1,6 +1,7 @@
 package com.invoicingproject.spine.dto;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -8,7 +9,7 @@ public class EmployeeRequest {
 
     private String empId;
     private String name;
-    private String project;
+    private String project; // Kept for backward compatibility
     private String projectType;
     private String employeeRole;
     private Boolean billableStatus;
@@ -16,6 +17,10 @@ public class EmployeeRequest {
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate startDate;
+
+    // Multiple projects support
+    private List<Long> projectIds;
+    private List<String> projectNames;
 
     public EmployeeRequest() {
     }
@@ -93,5 +98,21 @@ public class EmployeeRequest {
 
     public void setStartDate(LocalDate startDate) {
         this.startDate = startDate;
+    }
+
+    public List<Long> getProjectIds() {
+        return projectIds;
+    }
+
+    public void setProjectIds(List<Long> projectIds) {
+        this.projectIds = projectIds;
+    }
+
+    public List<String> getProjectNames() {
+        return projectNames;
+    }
+
+    public void setProjectNames(List<String> projectNames) {
+        this.projectNames = projectNames;
     }
 }

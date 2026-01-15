@@ -2,13 +2,14 @@ package com.invoicingproject.spine.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class EmployeeResponse {
 
     private Long id;
     private String empId;
     private String name;
-    private String project;
+    private String project; // Kept for backward compatibility
     private String projectType;
     private String employeeRole;
     private Boolean billableStatus;
@@ -17,6 +18,10 @@ public class EmployeeResponse {
     private String tenure;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    // Multiple projects support
+    private List<String> projects;
+    private List<Long> projectIds;
 
     public EmployeeResponse() {
     }
@@ -129,5 +134,21 @@ public class EmployeeResponse {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public List<String> getProjects() {
+        return projects;
+    }
+
+    public void setProjects(List<String> projects) {
+        this.projects = projects;
+    }
+
+    public List<Long> getProjectIds() {
+        return projectIds;
+    }
+
+    public void setProjectIds(List<Long> projectIds) {
+        this.projectIds = projectIds;
     }
 }

@@ -3,6 +3,8 @@ package com.invoicingproject.spine.entity;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -11,7 +13,7 @@ public class Employee {
     private Long id;
     private String empId;
     private String name;
-    private String project;
+    private String project; // Kept for backward compatibility
     private String projectType;
     private String employeeRole;
     private Boolean billableStatus;
@@ -22,6 +24,9 @@ public class Employee {
     private String tenure;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    // Multiple projects relationship via employee_projects junction table
+    private List<EmployeeProject> employeeProjects = new ArrayList<>();
 
     public Employee() {
         this.createdAt = LocalDateTime.now();
@@ -167,6 +172,36 @@ public class Employee {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public List<EmployeeProject> getEmployeeProjects() {
+        return employeeProjects;
+    }
+
+    public void setEmployeeProjects(List<EmployeeProject> employeeProjects) {
+        this.employeeProjects = employeeProjects;
+    }
+
+    // Helper method to get project names as a list
+    public List<String> getProjectNames() {
+        List<String> names = new ArrayList<>();
+        if (employeeProjects != null) {
+            for (EmployeeProject ep : employeeProjects) {
+                if (ep.getProject() != null) {
+                    names.add(ep.getProject().getProjectName());
+                }
+            }
+        }
+        return names;
+    }
+
+    // Helper method to get comma-separated project names
+    public String getProjectsAsString() {
+        List<String> names = getProjectNames();
+        if (names.isEmpty()) {
+            return project != null ? project : "No Project"; // Fallback for backward compatibility
+        }
+        return String.join(", ", names);
     }
 
     public void preUpdate() {

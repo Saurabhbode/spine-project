@@ -1349,7 +1349,7 @@ const FinanceManagerDashboard = () => {
                       <i className="fas fa-building"></i>
                       Department
                     </label>
-                    <select
+                  <select
                       id="department"
                       name="department"
                       value={newProject.department}
@@ -1358,10 +1358,6 @@ const FinanceManagerDashboard = () => {
                       style={{ width: '100%', padding: '12px', border: '2px solid #e1e5e9', borderRadius: '8px' }}
                     >
                       <option value="Finance">Finance</option>
-                      <option value="Operations">Operations</option>
-                      <option value="Trace Sheets">Trace Sheets</option>
-                      <option value="HR">HR</option>
-                      <option value="IT">IT</option>
                     </select>
                   </div>
                 </div>
@@ -1572,7 +1568,7 @@ const FinanceManagerDashboard = () => {
                       <i className="fas fa-building"></i>
                       Department
                     </label>
-                    <select
+                  <select
                       id="editDepartment"
                       name="department"
                       value={newProject.department}
@@ -1581,10 +1577,6 @@ const FinanceManagerDashboard = () => {
                       style={{ width: '100%', padding: '12px', border: '2px solid #e1e5e9', borderRadius: '8px' }}
                     >
                       <option value="Finance">Finance</option>
-                      <option value="Operations">Operations</option>
-                      <option value="Trace Sheets">Trace Sheets</option>
-                      <option value="HR">HR</option>
-                      <option value="IT">IT</option>
                     </select>
                   </div>
                 </div>

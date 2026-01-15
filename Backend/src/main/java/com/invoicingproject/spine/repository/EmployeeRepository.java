@@ -84,13 +84,19 @@ public class EmployeeRepository {
     // Check if employee exists by ID - optimized with LIMIT 1
     public boolean existsById(Long id) {
         String sql = "SELECT 1 FROM employees WHERE id = ? LIMIT 1";
-        return jdbcTemplate.queryForObject(sql, Integer.class, id) != null;
+        Integer result = jdbcTemplate.queryForObject(sql, Integer.class, id);
+        return result != null;
     }
 
     // Check if employee exists by emp_id - optimized with LIMIT 1
     public boolean existsByEmpId(String empId) {
         String sql = "SELECT 1 FROM employees WHERE emp_id = ? LIMIT 1";
-        return jdbcTemplate.queryForObject(sql, Integer.class, empId) != null;
+        try {
+            Integer result = jdbcTemplate.queryForObject(sql, Integer.class, empId);
+            return result != null;
+        } catch (org.springframework.dao.EmptyResultDataAccessException e) {
+            return false;
+        }
     }
 
     public Employee save(Employee employee) {
@@ -99,15 +105,21 @@ public class EmployeeRepository {
 
         if (employee.getId() == null) {
             // Insert
-            String sql = "INSERT INTO employees (emp_id, name, project, employee_role, created_at, updated_at) " +
-                    "VALUES (?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO employees (emp_id, name, project, project_type, employee_role, billable_status, billing_type, start_date, tenure, created_at, updated_at) "
+                    +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             employee.setCreatedAt(now);
 
             jdbcTemplate.update(sql,
                     employee.getEmpId(),
                     employee.getName(),
                     employee.getProject(),
+                    employee.getProjectType(),
                     employee.getEmployeeRole(),
+                    employee.getBillableStatus(),
+                    employee.getBillingType(),
+                    employee.getStartDate() != null ? java.sql.Date.valueOf(employee.getStartDate()) : null,
+                    employee.getTenure(),
                     employee.getCreatedAt(),
                     employee.getUpdatedAt());
 
@@ -116,12 +128,17 @@ public class EmployeeRepository {
             employee.setId(id);
         } else {
             // Update
-            String sql = "UPDATE employees SET emp_id = ?, name = ?, project = ?, employee_role = ?, updated_at = ? WHERE id = ?";
+            String sql = "UPDATE employees SET emp_id = ?, name = ?, project = ?, project_type = ?, employee_role = ?, billable_status = ?, billing_type = ?, start_date = ?, tenure = ?, updated_at = ? WHERE id = ?";
             jdbcTemplate.update(sql,
                     employee.getEmpId(),
                     employee.getName(),
                     employee.getProject(),
+                    employee.getProjectType(),
                     employee.getEmployeeRole(),
+                    employee.getBillableStatus(),
+                    employee.getBillingType(),
+                    employee.getStartDate() != null ? java.sql.Date.valueOf(employee.getStartDate()) : null,
+                    employee.getTenure(),
                     employee.getUpdatedAt(),
                     employee.getId());
         }
@@ -138,5 +155,20 @@ public class EmployeeRepository {
         String sql = "SELECT COUNT(*) FROM employees";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
         return count != null ? count : 0;
+    }
+
+    /**
+     * Update employee_role for all employees that have the old role name.
+     * This is used when a role name is updated to automatically sync employee
+     * records.
+     * 
+     * @param oldRoleName The old role name to search for
+     * @param newRoleName The new role name to set
+     * @return Number of employees updated
+     */
+    public int updateEmployeeRoleByName(String oldRoleName, String newRoleName) {
+        String sql = "UPDATE employees SET employee_role = ?, updated_at = ? WHERE employee_role = ?";
+        LocalDateTime now = LocalDateTime.now();
+        return jdbcTemplate.update(sql, newRoleName, now, oldRoleName);
     }
 }

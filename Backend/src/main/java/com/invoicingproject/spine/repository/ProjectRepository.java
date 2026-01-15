@@ -98,6 +98,12 @@ public class ProjectRepository {
         return projects.isEmpty() ? Optional.empty() : Optional.of(projects.get(0));
     }
 
+    public Optional<Project> findByProjectName(String projectName) {
+        String sql = "SELECT * FROM projects WHERE project_name = ?";
+        List<Project> projects = jdbcTemplate.query(sql, projectRowMapper, projectName);
+        return projects.isEmpty() ? Optional.empty() : Optional.of(projects.get(0));
+    }
+
     // Check if project exists by ID - optimized with LIMIT 1
     public boolean existsById(Long id) {
         String sql = "SELECT 1 FROM projects WHERE id = ? LIMIT 1";

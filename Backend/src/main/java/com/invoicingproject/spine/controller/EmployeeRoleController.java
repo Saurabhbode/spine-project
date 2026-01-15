@@ -3,8 +3,11 @@ package com.invoicingproject.spine.controller;
 import com.invoicingproject.spine.dto.EmployeeRoleRequest;
 import com.invoicingproject.spine.dto.EmployeeRoleResponse;
 import com.invoicingproject.spine.entity.EmployeeRole;
+import com.invoicingproject.spine.repository.EmployeeRepository;
 import com.invoicingproject.spine.repository.EmployeeRoleRepository;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +21,13 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*")
 public class EmployeeRoleController {
 
+    private static final Logger logger = LoggerFactory.getLogger(EmployeeRoleController.class);
+
     @Autowired
     private EmployeeRoleRepository employeeRoleRepository;
+
+    @Autowired
+    private EmployeeRepository employeeRepository;
 
     /**
      * Get all active employee roles
@@ -83,20 +91,33 @@ public class EmployeeRoleController {
     public ResponseEntity<?> updateRole(@PathVariable Long id, @Valid @RequestBody EmployeeRoleRequest request) {
         return employeeRoleRepository.findById(id)
                 .map(existingRole -> {
+                    String oldRoleName = existingRole.getRoleName();
+                    String newRoleName = request.getRoleName();
+
                     // Check if new role name conflicts with another role
-                    if (!existingRole.getRoleName().equals(request.getRoleName())
-                            && employeeRoleRepository.existsByRoleName(request.getRoleName())) {
+                    if (!oldRoleName.equals(newRoleName)
+                            && employeeRoleRepository.existsByRoleName(newRoleName)) {
                         return ResponseEntity.status(HttpStatus.CONFLICT)
-                                .body(new ErrorResponse("Role name '" + request.getRoleName() + "' already exists"));
+                                .body(new ErrorResponse("Role name '" + newRoleName + "' already exists"));
                     }
 
-                    existingRole.setRoleName(request.getRoleName());
+                    // Store the old name for syncing employees
+                    existingRole.setRoleName(newRoleName);
                     existingRole.setDescription(request.getDescription());
                     if (request.getIsActive() != null) {
                         existingRole.setIsActive(request.getIsActive());
                     }
 
                     EmployeeRole updatedRole = employeeRoleRepository.save(existingRole);
+
+                    // Sync all employees that have the old role name to use the new role name
+                    if (!oldRoleName.equals(newRoleName)) {
+                        logger.info("Syncing employee roles from '{}' to '{}' after role name update", oldRoleName,
+                                newRoleName);
+                        int employeesUpdated = employeeRepository.updateEmployeeRoleByName(oldRoleName, newRoleName);
+                        logger.info("Updated {} employee records to use new role name", employeesUpdated);
+                    }
+
                     return ResponseEntity.ok(mapToResponse(updatedRole));
                 })
                 .orElse(ResponseEntity.notFound().build());

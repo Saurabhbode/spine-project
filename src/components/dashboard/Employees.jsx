@@ -19,9 +19,14 @@ const Employees = () => {
     projectType: "",
     employeeRole: "",
     billableStatus: null,
-    startDate: ""
+    startDate: "",
+    projectIds: []
   });
   const [editingEmployee, setEditingEmployee] = useState(null);
+  
+  // Multi-select project state for forms
+  const [selectedProjects, setSelectedProjects] = useState([]);
+  const [editingSelectedProjects, setEditingSelectedProjects] = useState([]);
   
   // Manage Roles Modal State
   const [allRoles, setAllRoles] = useState([]);
@@ -165,13 +170,41 @@ const Employees = () => {
     }));
   };
 
+  // Handle multi-select project change for new employee
+  const handleProjectMultiSelectChange = (e) => {
+    const selectedOptions = Array.from(e.target.selectedOptions, option => parseInt(option.value));
+    setSelectedProjects(selectedOptions);
+  };
+
+  // Handle multi-select project change for edit employee
+  const handleEditProjectMultiSelectChange = (e) => {
+    const selectedOptions = Array.from(e.target.selectedOptions, option => parseInt(option.value));
+    setEditingSelectedProjects(selectedOptions);
+  };
+
+  // Handle input change for edit form
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditingEmployee(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   const handleAddEmployee = async (e) => {
     e.preventDefault();
     try {
+      // Build comma-separated project string for backward compatibility
+      const projectNames = selectedProjects.map(projectId => {
+        const project = projects.find(p => p.id === projectId);
+        return project ? project.projectName : '';
+      }).filter(Boolean);
+      
       const employeeData = {
         empId: newEmployee.empId,
         name: newEmployee.name,
-        project: newEmployee.project,
+        project: projectNames.join(", "), // For backward compatibility
+        projectIds: selectedProjects, // For multiple projects junction table
         projectType: newEmployee.projectType,
         employeeRole: newEmployee.employeeRole,
         billableStatus: newEmployee.billableStatus,
@@ -182,7 +215,8 @@ const Employees = () => {
       if (response) {
         setEmployees([...employees, response]);
         setShowAddEmployeeModal(false);
-        setNewEmployee({ empId: "", name: "", project: "", projectType: "", employeeRole: "", billableStatus: null, startDate: "" });
+        setNewEmployee({ empId: "", name: "", project: "", projectType: "", employeeRole: "", billableStatus: null, startDate: "", projectIds: [] });
+        setSelectedProjects([]);
       }
     } catch (error) {
       console.error("Error adding employee:", error);
@@ -194,7 +228,24 @@ const Employees = () => {
   const handleEditClick = async (employee) => {
     // Refresh employee roles to get any new roles added directly to database
     await fetchEmployeeRoles();
+    
+    // Set editing employee with all fields
     setEditingEmployee({ ...employee });
+    
+    // Set selected projects from employee's projectIds or derive from project names
+    if (employee.projectIds && employee.projectIds.length > 0) {
+      setEditingSelectedProjects(employee.projectIds);
+    } else if (employee.projects && employee.projects.length > 0) {
+      // Fallback: derive project IDs from project names
+      const projectIds = employee.projects.map(projectName => {
+        const project = projects.find(p => p.projectName === projectName);
+        return project ? project.id : null;
+      }).filter(Boolean);
+      setEditingSelectedProjects(projectIds);
+    } else {
+      setEditingSelectedProjects([]);
+    }
+    
     setShowEditEmployeeModal(true);
   };
 
@@ -202,10 +253,17 @@ const Employees = () => {
   const handleUpdateEmployee = async (e) => {
     e.preventDefault();
     try {
+      // Build comma-separated project string for backward compatibility
+      const projectNames = editingSelectedProjects.map(projectId => {
+        const project = projects.find(p => p.id === projectId);
+        return project ? project.projectName : '';
+      }).filter(Boolean);
+      
       const employeeData = {
         empId: editingEmployee.empId,
         name: editingEmployee.name,
-        project: editingEmployee.project,
+        project: projectNames.join(", "), // For backward compatibility
+        projectIds: editingSelectedProjects, // For multiple projects junction table
         projectType: editingEmployee.projectType,
         employeeRole: editingEmployee.employeeRole,
         billableStatus: editingEmployee.billableStatus,
@@ -219,6 +277,7 @@ const Employees = () => {
         ));
         setShowEditEmployeeModal(false);
         setEditingEmployee(null);
+        setEditingSelectedProjects([]);
       }
     } catch (error) {
       console.error("Error updating employee:", error);
@@ -226,19 +285,11 @@ const Employees = () => {
     }
   };
 
-  // Handle input change for edit form
-  const handleEditInputChange = (e) => {
-    const { name, value } = e.target;
-    setEditingEmployee(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
   // Close edit modal
   const closeEditEmployeeModal = () => {
     setShowEditEmployeeModal(false);
     setEditingEmployee(null);
+    setEditingSelectedProjects([]);
   };
 
   const handleDeleteEmployee = async (id) => {
@@ -281,6 +332,7 @@ const Employees = () => {
   const closeAddEmployeeModal = () => {
     setShowAddEmployeeModal(false);
     setNewEmployee({ empId: "", name: "", project: "", projectType: "", employeeRole: "", billableStatus: null, startDate: "" });
+    setSelectedProjects([]);
   };
 
   // ==============================
@@ -610,15 +662,35 @@ const Employees = () => {
                     </div>
                   </td>
                   <td style={{ padding: '1rem', color: '#333' }}>
-                    <span style={{ 
-                      background: '#e3f2fd', 
-                      color: '#1976d2',
-                      padding: '4px 12px',
-                      borderRadius: '20px',
-                      fontSize: '0.85rem'
-                    }}>
-                      {employee.project || 'N/A'}
-                    </span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      {employee.projects && employee.projects.length > 0 ? (
+                        employee.projects.map((projectName, idx) => (
+                          <span 
+                            key={idx}
+                            style={{ 
+                              background: '#e3f2fd', 
+                              color: '#1976d2',
+                              padding: '4px 12px',
+                              borderRadius: '20px',
+                              fontSize: '0.85rem',
+                              display: 'inline-block'
+                            }}
+                          >
+                            {projectName}
+                          </span>
+                        ))
+                      ) : (
+                        <span style={{ 
+                          background: '#f5f5f5', 
+                          color: '#999',
+                          padding: '4px 12px',
+                          borderRadius: '20px',
+                          fontSize: '0.85rem'
+                        }}>
+                          {employee.project || 'No Project'}
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td style={{ padding: '1rem', color: '#333' }}>
                     <span style={{ 
@@ -745,32 +817,45 @@ const Employees = () => {
                 <div className="input-group">
                   <label htmlFor="project">
                     <i className="fas fa-project-diagram"></i>
-                    Project <span className="required">*</span>
+                    Projects <span className="required">*</span>
+                    <span style={{ fontSize: '0.75rem', color: '#666', marginLeft: '8px', fontWeight: 'normal' }}>
+                      (Hold Ctrl/Cmd to select multiple)
+                    </span>
                   </label>
                   <select
                     id="project"
                     name="project"
-                    value={newEmployee.project}
-                    onChange={handleInputChange}
+                    multiple
+                    value={selectedProjects.map(String)}
+                    onChange={handleProjectMultiSelectChange}
                     required
-                    style={{ width: '100%', padding: '12px', border: '2px solid #e1e5e9', borderRadius: '8px' }}
+                    style={{ 
+                      width: '100%', 
+                      padding: '12px', 
+                      border: '2px solid #e1e5e9', 
+                      borderRadius: '8px',
+                      minHeight: '120px',
+                      backgroundColor: 'white'
+                    }}
                   >
-                    <option value="">Select a project</option>
                     {projects.length > 0 ? (
                       projects.map(project => (
-                        <option key={project.id} value={project.projectName}>
+                        <option key={project.id} value={project.id}>
                           {project.projectName}
                         </option>
                       ))
                     ) : (
                       <>
-                        <option value="Precision Medical Billing">Precision Medical Billing</option>
-                        <option value="Demo project">Demo project</option>
+                        <option value="1">Precision Medical Billing</option>
+                        <option value="2">Demo project</option>
                       </>
                     )}
-                    <option value="Trainee">Trainee</option>
-                    <option value="No Project">No Project</option>
                   </select>
+                  {selectedProjects.length > 0 && (
+                    <div style={{ marginTop: '8px', fontSize: '0.85rem', color: '#22c55e' }}>
+                      <i className="fas fa-check-circle"></i> {selectedProjects.length} project(s) selected
+                    </div>
+                  )}
                 </div>
 
                 <div className="input-group">
@@ -918,32 +1003,45 @@ const Employees = () => {
                 <div className="input-group">
                   <label htmlFor="editProject">
                     <i className="fas fa-project-diagram"></i>
-                    Project <span className="required">*</span>
+                    Projects <span className="required">*</span>
+                    <span style={{ fontSize: '0.75rem', color: '#666', marginLeft: '8px', fontWeight: 'normal' }}>
+                      (Hold Ctrl/Cmd to select multiple)
+                    </span>
                   </label>
                   <select
                     id="editProject"
                     name="project"
-                    value={editingEmployee.project}
-                    onChange={handleEditInputChange}
+                    multiple
+                    value={editingSelectedProjects.map(String)}
+                    onChange={handleEditProjectMultiSelectChange}
                     required
-                    style={{ width: '100%', padding: '12px', border: '2px solid #e1e5e9', borderRadius: '8px' }}
+                    style={{ 
+                      width: '100%', 
+                      padding: '12px', 
+                      border: '2px solid #e1e5e9', 
+                      borderRadius: '8px',
+                      minHeight: '120px',
+                      backgroundColor: 'white'
+                    }}
                   >
-                    <option value="">Select a project</option>
                     {projects.length > 0 ? (
                       projects.map(project => (
-                        <option key={project.id} value={project.projectName}>
+                        <option key={project.id} value={project.id}>
                           {project.projectName}
                         </option>
                       ))
                     ) : (
                       <>
-                        <option value="Precision Medical Billing">Precision Medical Billing</option>
-                        <option value="Demo project">Demo project</option>
+                        <option value="1">Precision Medical Billing</option>
+                        <option value="2">Demo project</option>
                       </>
                     )}
-                    <option value="Trainee">Trainee</option>
-                    <option value="No Project">No Project</option>
                   </select>
+                  {editingSelectedProjects.length > 0 && (
+                    <div style={{ marginTop: '8px', fontSize: '0.85rem', color: '#22c55e' }}>
+                      <i className="fas fa-check-circle"></i> {editingSelectedProjects.length} project(s) selected
+                    </div>
+                  )}
                 </div>
 
                 <div className="input-group">
@@ -1306,4 +1404,3 @@ const Employees = () => {
 };
 
 export default Employees;
-
