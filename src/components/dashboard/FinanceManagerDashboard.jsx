@@ -242,8 +242,20 @@ const FinanceManagerDashboard = () => {
     setInvoiceMessage(null);
     
     try {
-      // Fetch employees working on this project using junction table endpoint
-      const employees = await EmployeeService.getEmployeesByProjectFromJunction(project.projectName);
+      // Fetch employees working on this project using junction table endpoint first
+      let employees = [];
+      try {
+        employees = await EmployeeService.getEmployeesByProjectFromJunction(project.projectName);
+      } catch (junctionError) {
+        console.warn("Junction endpoint failed, trying backward compatibility endpoint:", junctionError);
+        // Fallback to backward compatibility endpoint
+        try {
+          employees = await EmployeeService.getEmployeesByProject(project.projectName);
+        } catch (fallbackError) {
+          console.warn("Backward compatibility endpoint also failed:", fallbackError);
+        }
+      }
+      
       setProjectEmployees(employees);
       
       setInvoiceFormData({
