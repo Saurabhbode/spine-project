@@ -5,14 +5,14 @@ import ProjectService from "../../services/ProjectService";
 import EmployeeService from "../../services/EmployeeService";
 import Users from "./Users";
 import Employees from "./Employees";
-import "../style.css";
+import FTEInvoice from "../FTEInvoice";
+
 
 const FinanceManagerDashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [activeSection, setActiveSection] = useState("dashboard");
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [stats, setStats] = useState({
     totalInvoices: 0,
     pendingApprovals: 0,
@@ -121,8 +121,16 @@ const FinanceManagerDashboard = () => {
   // Invoice form state
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedProjectForInvoice, setSelectedProjectForInvoice] = useState(null);
+  const [showFTEInvoice, setShowFTEInvoice] = useState(false);
   const [projectEmployees, setProjectEmployees] = useState([]);
   const [employeesLoading, setEmployeesLoading] = useState(false);
+
+  // FTE Invoice state - dynamic data
+  const [fteMonth, setFteMonth] = useState('');
+  const [fteYear, setFteYear] = useState(new Date().getFullYear());
+  const [fteSummaryData, setFteSummaryData] = useState([]);
+  const [fteAllocationData, setFteAllocationData] = useState([]);
   const [invoiceFormData, setInvoiceFormData] = useState({
     employeeId: "",
     employeeName: "",
@@ -193,10 +201,6 @@ const FinanceManagerDashboard = () => {
     if (section === "invoices") {
       loadInvoiceProjects();
     }
-  };
-
-  const toggleSidebar = () => {
-    setSidebarCollapsed(!sidebarCollapsed);
   };
 
   const formatCurrency = (amount) => {
@@ -282,6 +286,30 @@ const FinanceManagerDashboard = () => {
       setEmployeesLoading(false);
       setShowInvoiceModal(true);
     }
+  };
+
+  // Open FTE Invoice view
+  const openFTEInvoice = async (project) => {
+    if (project.projectType !== "FTE") {
+      alert("FTE Invoice can only be created for FTE-based projects.");
+      return;
+    }
+    setSelectedProjectForInvoice(project);
+
+    // TODO: Replace with actual API call to fetch FTE data
+    // For now, initialize with empty data until backend is connected
+    setFteMonth('');
+    setFteYear(new Date().getFullYear());
+    setFteSummaryData([]);
+    setFteAllocationData([]);
+
+    setShowFTEInvoice(true);
+  };
+
+  // Close FTE Invoice view
+  const closeFTEInvoice = () => {
+    setShowFTEInvoice(false);
+    setSelectedProjectForInvoice(null);
   };
 
   // Close invoice form modal
@@ -579,15 +607,12 @@ const FinanceManagerDashboard = () => {
   return (
     <div className="finance-dashboard">
       {/* Sidebar */}
-      <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
+      <aside className="sidebar">
         <div className="sidebar-header">
           <div className="logo">
             <i className="fas fa-chart-line"></i>
-            {!sidebarCollapsed && <span>Finance Manager</span>}
+            <span>SPINE</span>
           </div>
-          <button className="sidebar-toggle" onClick={toggleSidebar}>
-            <i className={`fas ${sidebarCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'}`}></i>
-          </button>
         </div>
         
         <nav className="sidebar-nav">
@@ -596,10 +621,9 @@ const FinanceManagerDashboard = () => {
               key={item.id}
               className={`nav-item ${activeSection === item.id ? 'active' : ''}`}
               onClick={() => handleNavigation(item.id)}
-              title={sidebarCollapsed ? item.label : ''}
             >
               <i className={item.icon}></i>
-              {!sidebarCollapsed && <span>{item.label}</span>}
+              <span>{item.label}</span>
             </button>
           ))}
         </nav>
@@ -616,7 +640,7 @@ const FinanceManagerDashboard = () => {
             </h1>
             <div className="user-department">
               <span className="department-badge">Finance Department</span>
-              <span className="role-badge manager-role">Manager</span>
+              <span className={`role-badge ${user?.isAdmin ? 'manager-role' : 'user-role'}`}>{user?.isAdmin ? 'ADMIN' : 'User'}</span>
             </div>
           </div>
           <div className="user-info">
@@ -1174,15 +1198,26 @@ const FinanceManagerDashboard = () => {
                             </span>
                           </td>
                           <td style={{ padding: '1rem', textAlign: 'center' }}>
-                            <button
-                              className="project-name-btn"
-                              onClick={() => openInvoiceModal(project)}
-                              title="Create Invoice"
-                              style={{ background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)' }}
-                            >
-                              <i className="fas fa-file-invoice-dollar"></i>
-                              Create Invoice
-                            </button>
+                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                              <button
+                                className="project-name-btn"
+                                onClick={() => openInvoiceModal(project)}
+                                title="Create Invoice"
+                                style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
+                              >
+                                <i className="fas fa-file-invoice-dollar"></i>
+                                Create Invoice
+                              </button>
+                              <button
+                                className="project-name-btn"
+                                onClick={() => openFTEInvoice(project)}
+                                title="Create FTE Invoice"
+                                style={{ background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)' }}
+                              >
+                                <i className="fas fa-table"></i>
+                                FTE Invoice
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -1696,14 +1731,21 @@ const FinanceManagerDashboard = () => {
         </div>
       )}
 
-      {/* Invoice Form Modal */}
-      {showInvoiceModal && selectedProject && (
-        <div className="modal-overlay" onClick={closeInvoiceModal}>
-          <div className="modal invoice-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '1000px', maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-            {/* Logo Header */}
-            <div className="invoice-header" style={{ 
+      {/* FTE Invoice Modal */}
+      {showFTEInvoice && selectedProjectForInvoice && (
+        <div className="modal-overlay" onClick={closeFTEInvoice}>
+          <div className="modal fte-invoice-modal" onClick={(e) => e.stopPropagation()} style={{ 
+            maxWidth: '1100px', 
+            maxHeight: '95vh', 
+            overflow: 'hidden',
+            display: 'flex', 
+            flexDirection: 'column',
+            background: '#f7f7f7'
+          }}>
+            {/* Modal Header */}
+            <div style={{ 
               background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
-              padding: '1.5rem 2rem',
+              padding: '1rem 1.5rem',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -1711,8 +1753,8 @@ const FinanceManagerDashboard = () => {
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <div style={{ 
-                  width: '50px', 
-                  height: '50px', 
+                  width: '45px', 
+                  height: '45px', 
                   background: 'white', 
                   borderRadius: '10px',
                   display: 'flex',
@@ -1720,314 +1762,73 @@ const FinanceManagerDashboard = () => {
                   justifyContent: 'center',
                   boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
                 }}>
-                  <i className="fas fa-file-invoice-dollar" style={{ fontSize: '1.5rem', color: '#667eea' }}></i>
+                  <i className="fas fa-table" style={{ fontSize: '1.3rem', color: '#667eea' }}></i>
                 </div>
                 <div>
-                  <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '600' }}>Create Invoice</h2>
-                  <p style={{ margin: '4px 0 0 0', opacity: 0.9, fontSize: '0.9rem' }}>{selectedProject.projectName}</p>
+                  <h2 style={{ margin: 0, fontSize: '1.3rem', fontWeight: '600' }}>FTE Invoice</h2>
+                  <p style={{ margin: '2px 0 0 0', opacity: 0.9, fontSize: '0.85rem' }}>{selectedProjectForInvoice.projectName}</p>
                 </div>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <span className="project-type-badge fte" style={{ 
-                  background: 'rgba(255,255,255,0.2)', 
+              <button 
+                onClick={closeFTEInvoice}
+                style={{ 
+                  background: 'rgba(255,255,255,0.2)',
+                  border: 'none',
                   color: 'white',
-                  padding: '6px 16px',
-                  borderRadius: '20px',
-                  fontSize: '0.85rem',
-                  fontWeight: '500'
-                }}>
-                  FTE Project
-                </span>
-              </div>
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1.2rem'
+                }}
+              >
+                <i className="fas fa-times"></i>
+              </button>
             </div>
 
-            {/* Modal Body with Two Columns */}
-            <div className="modal-body" style={{ padding: '0', flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
-              {invoiceMessage && (
-                <div className={`message ${invoiceMessage.type}-message`} style={{ margin: '1rem 2rem' }}>
-                  <i className={`fas ${invoiceMessage.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}`}></i>
-                  {invoiceMessage.text}
-                </div>
-              )}
-
-              {/* Invoice Date and Description */}
-              <div style={{ padding: '1rem 2rem', background: '#f8f9fa', borderBottom: '1px solid #e1e5e9', display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
-                <div className="input-group" style={{ flex: 1, marginBottom: 0 }}>
-                  <label htmlFor="invoiceDate">
-                    <i className="fas fa-calendar-alt"></i>
-                    Invoice Date <span className="required">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    id="invoiceDate"
-                    name="invoiceDate"
-                    value={invoiceFormData.invoiceDate}
-                    onChange={handleInvoiceInputChange}
-                    required
-                  />
-                </div>
-                <div className="input-group" style={{ flex: 2, marginBottom: 0 }}>
-                  <label htmlFor="description">
-                    <i className="fas fa-align-left"></i>
-                    Description
-                  </label>
-                  <input
-                    type="text"
-                    id="description"
-                    name="description"
-                    value={invoiceFormData.description}
-                    onChange={handleInvoiceInputChange}
-                    placeholder="Enter invoice description"
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', flex: 1, gap: '0' }}>
-                {/* Left Section - Employee Names */}
-                <div style={{ 
-                  width: '50%', 
-                  borderRight: '2px solid #e1e5e9',
-                  padding: '1.5rem',
-                  background: '#f8f9fa',
-                  overflowY: 'auto',
-                  maxHeight: '400px'
-                }}>
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '0.5rem',
-                    marginBottom: '1rem',
-                    paddingBottom: '0.75rem',
-                    borderBottom: '2px solid #e1e5e9'
-                  }}>
-                    <i className="fas fa-users" style={{ color: '#667eea' }}></i>
-                    <h3 style={{ margin: 0, color: '#333', fontSize: '1.1rem' }}>Employees Assigned</h3>
-                    <span style={{ 
-                      background: '#667eea', 
-                      color: 'white',
-                      padding: '2px 10px',
-                      borderRadius: '12px',
-                      fontSize: '0.75rem',
-                      fontWeight: '600'
-                    }}>
-                      {projectEmployees.length}
-                    </span>
-                  </div>
-
-                  {employeesLoading ? (
-                    <div className="loading" style={{ padding: '2rem' }}>
-                      <i className="fas fa-spinner fa-spin"></i>
-                      <p>Loading employees...</p>
-                    </div>
-                  ) : projectEmployees.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                      {projectEmployees.map((employee, index) => (
-                        <div 
-                          key={employee.id}
-                          className="employee-card"
-                          style={{
-                            background: 'white',
-                            borderRadius: '10px',
-                            padding: '1rem',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
-                            border: '1px solid #e1e5e9',
-                            cursor: 'default',
-                            transition: 'all 0.2s ease'
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <div style={{
-                              width: '42px',
-                              height: '42px',
-                              borderRadius: '50%',
-                              background: index % 2 === 0 
-                                ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                                : 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              color: 'white',
-                              fontWeight: '600',
-                              fontSize: '1rem',
-                              flexShrink: 0
-                            }}>
-                              {employee.name ? employee.name.charAt(0).toUpperCase() : '?'}
-                            </div>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontWeight: '600', color: '#333', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {employee.name}
-                              </div>
-                              <div style={{ fontSize: '0.85rem', color: '#666' }}>
-                                <i className="fas fa-id-badge" style={{ marginRight: '4px', color: '#667eea' }}></i>
-                                {employee.employeeRole || 'Team Member'}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div style={{ 
-                      textAlign: 'center', 
-                      padding: '2rem', 
-                      color: '#666',
-                      background: 'white',
-                      borderRadius: '10px',
-                      border: '2px dashed #e1e5e9'
-                    }}>
-                      <i className="fas fa-users" style={{ fontSize: '2rem', color: '#ccc', marginBottom: '0.5rem' }}></i>
-                      <p style={{ margin: 0 }}>No employees assigned to this project</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Right Section - Editable Amounts */}
-                <div style={{ 
-                  width: '50%', 
-                  padding: '1.5rem',
-                  background: 'white',
-                  overflowY: 'auto',
-                  maxHeight: '400px'
-                }}>
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '0.5rem',
-                    marginBottom: '1rem',
-                    paddingBottom: '0.75rem',
-                    borderBottom: '2px solid #e1e5e9'
-                  }}>
-                    <i className="fas fa-dollar-sign" style={{ color: '#22c55e' }}></i>
-                    <h3 style={{ margin: 0, color: '#333', fontSize: '1.1rem' }}>Billable Amounts</h3>
-                  </div>
-
-                  {projectEmployees.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                      {projectEmployees.map((employee, index) => (
-                        <div 
-                          key={employee.id}
-                          style={{
-                            background: '#f8f9fa',
-                            borderRadius: '10px',
-                            padding: '1rem',
-                            border: '1px solid #e1e5e9'
-                          }}
-                        >
-                          <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '0.5rem',
-                            marginBottom: '0.75rem'
-                          }}>
-                            <i className="fas fa-user" style={{ color: '#667eea' }}></i>
-                            <span style={{ fontWeight: '600', color: '#333' }}>{employee.name}</span>
-                          </div>
-                          
-                          <div className="input-group" style={{ marginBottom: 0 }}>
-                            <label htmlFor={`amount_${employee.id}`}>
-                              <i className="fas fa-money-bill-wave"></i>
-                              Amount ($)
-                            </label>
-                            <input
-                              type="number"
-                              id={`amount_${employee.id}`}
-                              name={`amount_${employee.id}`}
-                              value={invoiceFormData[`amount_${employee.id}`] || ''}
-                              onChange={(e) => {
-                                const { name, value } = e.target;
-                                setInvoiceFormData(prev => ({
-                                  ...prev,
-                                  [name]: value
-                                }));
-                              }}
-                              placeholder="0.00"
-                              min="0"
-                              step="0.01"
-                              style={{ 
-                                fontSize: '1.2rem', 
-                                fontWeight: '700',
-                                textAlign: 'right',
-                                color: '#22c55e'
-                              }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-
-                      {/* Total Amount */}
-                      <div style={{ 
-                        marginTop: '1rem', 
-                        padding: '1.25rem',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        borderRadius: '12px',
-                        color: 'white',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        boxShadow: '0 4px 6px rgba(102, 126, 234, 0.3)'
-                      }}>
-                        <span style={{ fontWeight: '600', fontSize: '1.1rem' }}>
-                          <i className="fas fa-calculator" style={{ marginRight: '8px' }}></i>
-                          Total Invoice Amount:
-                        </span>
-                        <span style={{ fontSize: '1.75rem', fontWeight: '700' }}>
-                          ${Object.entries(invoiceFormData)
-                            .filter(([key]) => key.startsWith('amount_'))
-                            .reduce((sum, [, value]) => sum + (parseFloat(value) || 0), 0)
-                            .toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div style={{ 
-                      textAlign: 'center', 
-                      padding: '2rem', 
-                      color: '#666',
-                      background: '#f8f9fa',
-                      borderRadius: '10px',
-                      border: '2px dashed #e1e5e9'
-                    }}>
-                      <i className="fas fa-dollar-sign" style={{ fontSize: '2rem', color: '#ccc', marginBottom: '0.5rem' }}></i>
-                      <p style={{ margin: 0 }}>No employees to assign amounts</p>
-                    </div>
-                  )}
-                </div>
-              </div>
+            {/* Modal Body - FTE Invoice Component */}
+            <div style={{ 
+              flex: 1, 
+              overflow: 'auto', 
+              padding: '0',
+              background: '#f7f7f7'
+            }}>
+              <FTEInvoice 
+                month={fteMonth}
+                year={fteYear}
+                summaryData={fteSummaryData}
+                allocationData={fteAllocationData}
+              />
             </div>
 
             {/* Modal Footer */}
-            <div className="modal-footer" style={{ 
+            <div style={{ 
               borderTop: '1px solid #e1e5e9',
-              padding: '1rem 2rem',
-              background: '#f8f9fa'
+              padding: '1rem 1.5rem',
+              background: 'white',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '1rem'
             }}>
               <button 
                 type="button" 
                 className="cancel-btn" 
-                onClick={closeInvoiceModal}
-                disabled={invoiceSubmitting}
+                onClick={closeFTEInvoice}
               >
                 <i className="fas fa-times"></i>
-                Cancel
+                Close
               </button>
               <button 
                 type="button"
                 className="confirm-btn" 
-                onClick={handleInvoiceSubmit}
-                disabled={invoiceSubmitting || projectEmployees.length === 0}
-                style={{ background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)' }}
+                onClick={closeFTEInvoice}
+                style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
               >
-                {invoiceSubmitting ? (
-                  <>
-                    <i className="fas fa-spinner fa-spin"></i>
-                    Creating Invoice...
-                  </>
-                ) : (
-                  <>
-                    <i className="fas fa-file-invoice-dollar"></i>
-                    Create Invoice
-                  </>
-                )}
+                <i className="fas fa-check"></i>
+                Done
               </button>
             </div>
           </div>
