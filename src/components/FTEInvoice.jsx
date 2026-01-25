@@ -90,6 +90,15 @@ const FTEInvoice = ({
 
   return (
     <div className="fte-invoice-container">
+      {/* Logo Header */}
+      <div className="fte-invoice-header">
+        <img 
+          src="/3gen logo.png" 
+          alt="3gen Logo" 
+          className="fte-logo"
+        />
+      </div>
+
       {/* FTE Utilization Summary */}
       <section className="fte-section">
         <h2 className="fte-section-title">{month} {year} – FTE Utilization Summary</h2>

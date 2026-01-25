@@ -7,6 +7,23 @@
   font-family: var(--font-family-secondary);
 }
 
+/* Logo Header */
+.fte-invoice-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+  background: var(--bg-white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.fte-logo {
+  max-height: 60px;
+  width: auto;
+}
+
 .fte-section {
   margin-bottom: var(--spacing-3xl);
 }
