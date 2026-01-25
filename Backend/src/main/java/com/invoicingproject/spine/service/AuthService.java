@@ -485,10 +485,8 @@ public class AuthService {
                 return response;
             }
 
-            User user = userOptional.get();
-
             // Generate new access token
-            String newAccessToken = jwtService.generateToken(username, user.getDepartment());
+            String newAccessToken = jwtService.generateToken(username, userOptional.get().getDepartment());
 
             // Prepare response
             response.put("success", true);
@@ -612,7 +610,7 @@ public class AuthService {
                 return response;
             }
 
-            User user = userOptional.get();
+            
 
             // Check if email already exists (and is not the current user's email)
             if (userRepository.existsByEmail(newEmail)) {

@@ -4,6 +4,7 @@ import com.invoicingproject.spine.entity.EmployeeProject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
@@ -16,9 +17,9 @@ public class EmployeeProjectRepository {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    private final RowMapper<EmployeeProject> employeeProjectRowMapper = new RowMapper<EmployeeProject>() {
+    private final @NonNull RowMapper<EmployeeProject> employeeProjectRowMapper = new RowMapper<EmployeeProject>() {
         @Override
-        public EmployeeProject mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public EmployeeProject mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
             EmployeeProject ep = new EmployeeProject();
             ep.setId(rs.getLong("id"));
             ep.setEmployeeId(rs.getLong("employee_id"));

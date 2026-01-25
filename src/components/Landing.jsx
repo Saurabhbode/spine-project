@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import "./style.css"; // Use the existing style.css for consistent styling
 
 const Landing = () => {
   const [showAnimation, setShowAnimation] = useState(true);
@@ -17,8 +16,8 @@ const Landing = () => {
     return (
       <div className="welcome-animation-container">
         <div className="welcome-animation">
-          <div className="spine-logo-animated">SPINE</div>
           <div className="welcome-text">Welcome to</div>
+          <div className="spine-logo-animated">SPINE</div>
           <div className="loading-bar">
             <div className="loading-progress"></div>
           </div>

@@ -1,0 +1,116 @@
+/**
+ * Main CSS Entry Point
+ * Import all CSS files in the correct order (dependencies first)
+ *
+ * Order: Variables → Reset → Layout → Components → Pages
+ */
+
+/* ============================================
+   BASE LAYER
+   Global resets, variables, and design tokens
+   ============================================ */
+
+/* CSS Reset and Browser Normalization */
+@import url('./base/reset.css');
+
+/* Design Tokens - Colors, Fonts, Spacing, Shadows */
+@import url('./base/variables.css');
+
+/* ============================================
+   LAYER LAYOUT
+   Structural layout components
+   ============================================ */
+
+/* Dashboard Structure */
+@import url('./layout/dashboard.css');
+
+/* Top Header */
+@import url('./layout/header.css');
+
+/* ============================================
+   COMPONENTS LAYER
+   Reusable UI components
+   ============================================ */
+
+/* Form Elements */
+@import url('./components/forms.css');
+
+/* Buttons */
+@import url('./components/buttons.css');
+
+/* Modal Dialogs */
+@import url('./components/modals.css');
+
+/* Alert Messages */
+@import url('./components/messages.css');
+
+/* Cards */
+@import url('./components/cards.css');
+
+/* ============================================
+   PAGES LAYER
+   Page-specific styles
+   ============================================ */
+
+/* Login Page */
+@import url('./pages/login.css');
+
+/* Landing Page */
+@import url('./pages/landing.css');
+
+/* Finance Dashboard Page */
+@import url('./pages/finance-dashboard.css');
+
+/* Users Management Page */
+@import url('./pages/users.css');
+
+/* Profile Page */
+@import url('./pages/profile.css');
+
+/* ============================================
+   LEGACY STYLES
+   Additional styles that need migration
+   ============================================ */
+
+/*
+ * The following legacy styles will be migrated to the appropriate
+ * component/page files over time:
+ *
+ * - Account Management: accounts-grid, account-form
+ * - Profile Page: profile-header, profile-tabs, profile-section
+ * - Users Management: users-table, bulk-actions-panel
+ * - Project Overview: projects-grid, project-list
+ * - Welcome Animation: welcome-animation-container
+ */
+
+/* Animation Keyframes - Keep here for global access */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes glow {
+  from { filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3)); }
+  to { filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.6)); }
+}
+
+@keyframes loading {
+  0% { width: 0%; opacity: 1; }
+  70% { width: 100%; opacity: 1; }
+  100% { width: 100%; opacity: 0; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -9,11 +9,12 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
+import org.springframework.lang.NonNull;
 
 @Repository
 public class PermissionRepository {
@@ -21,9 +22,9 @@ public class PermissionRepository {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    private final RowMapper<Permission> permissionRowMapper = new RowMapper<Permission>() {
+    private final @NonNull RowMapper<Permission> permissionRowMapper = new RowMapper<Permission>() {
         @Override
-        public Permission mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public Permission mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
             Permission permission = new Permission();
             permission.setId(rs.getLong("id"));
             permission.setPermissionName(rs.getString("permission_name"));

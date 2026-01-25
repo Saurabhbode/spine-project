@@ -105,6 +105,20 @@ const EmployeeService = {
       throw error;
     }
   },
+
+  // Get employees by project name using junction table (new approach for multi-project support)
+  async getEmployeesByProjectFromJunction(projectName) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/employees/project-junction/${encodeURIComponent(projectName)}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch employees for project from junction table');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching employees by project from junction:', error);
+      throw error;
+    }
+  },
 };
 
 export default EmployeeService;

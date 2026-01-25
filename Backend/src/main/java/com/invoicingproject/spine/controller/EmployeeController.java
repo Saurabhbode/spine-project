@@ -51,7 +51,8 @@ public class EmployeeController {
         }
     }
 
-    // Get employees by project name
+    // Get employees by project name (backward compatibility - uses old project
+    // column)
     @GetMapping("/project/{projectName}")
     public ResponseEntity<List<EmployeeResponse>> getEmployeesByProject(@PathVariable String projectName) {
         try {
@@ -64,6 +65,133 @@ public class EmployeeController {
         } catch (Exception e) {
             logger.error("Error fetching employees for project: {}", projectName, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // Get employees by project ID (uses employee_projects junction table)
+    @GetMapping("/project-id/{projectId}")
+    public ResponseEntity<List<EmployeeResponse>> getEmployeesByProjectId(@PathVariable Long projectId) {
+        try {
+            logger.info("Fetching employees for project ID: {}", projectId);
+            // Get all employee-project associations for this project
+            List<EmployeeProject> employeeProjects = employeeProjectRepository.findByProjectId(projectId);
+
+            // Get unique employee IDs
+            List<Long> employeeIds = employeeProjects.stream()
+                    .map(EmployeeProject::getEmployeeId)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            // Fetch employee details
+            List<EmployeeResponse> responses = new ArrayList<>();
+            for (Long employeeId : employeeIds) {
+                Optional<Employee> employeeOpt = employeeRepository.findById(employeeId);
+                if (employeeOpt.isPresent()) {
+                    responses.add(convertToResponse(employeeOpt.get()));
+                }
+            }
+
+            return ResponseEntity.ok(responses);
+        } catch (Exception e) {
+            logger.error("Error fetching employees for project ID: {}", projectId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // Get employees by project name using junction table (new approach)
+    @GetMapping("/project-junction/{projectName}")
+    public ResponseEntity<List<EmployeeResponse>> getEmployeesByProjectFromJunction(@PathVariable String projectName) {
+        try {
+            logger.info("Fetching employees for project from junction table: {}", projectName);
+
+            // Find project by name first
+            Optional<Project> projectOpt = projectRepository.findByProjectName(projectName);
+            if (projectOpt.isEmpty()) {
+                logger.warn("Project not found: {}", projectName);
+                return ResponseEntity.ok(new ArrayList<>());
+            }
+
+            Long projectId = projectOpt.get().getId();
+            logger.info("Project ID for '{}' is: {}", projectName, projectId);
+
+            // Get all employee-project associations for this project
+            List<EmployeeProject> employeeProjects = employeeProjectRepository.findByProjectId(projectId);
+            logger.info("Found {} employee-project associations for project ID: {}", employeeProjects.size(),
+                    projectId);
+
+            // Get unique employee IDs
+            List<Long> employeeIds = employeeProjects.stream()
+                    .map(EmployeeProject::getEmployeeId)
+                    .distinct()
+                    .collect(Collectors.toList());
+            logger.info("Found {} unique employee IDs: {}", employeeIds.size(), employeeIds);
+
+            // Fetch employee details
+            List<EmployeeResponse> responses = new ArrayList<>();
+            for (Long employeeId : employeeIds) {
+                Optional<Employee> employeeOpt = employeeRepository.findById(employeeId);
+                if (employeeOpt.isPresent()) {
+                    responses.add(convertToResponse(employeeOpt.get()));
+                    logger.info("Adding employee: {} ({})", employeeOpt.get().getName(), employeeOpt.get().getEmpId());
+                }
+            }
+
+            logger.info("Returning {} employees for project: {}", responses.size(), projectName);
+            return ResponseEntity.ok(responses);
+        } catch (Exception e) {
+            logger.error("Error fetching employees for project from junction: {}", projectName, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // Sync employee-project assignments from old column to junction table
+    @PostMapping("/sync-projects")
+    public ResponseEntity<String> syncProjects() {
+        try {
+            logger.info("Syncing employee-project assignments to junction table...");
+
+            List<Employee> employees = employeeRepository.findAll();
+            int syncCount = 0;
+
+            for (Employee employee : employees) {
+                String projectName = employee.getProject();
+                if (projectName != null && !projectName.isEmpty() &&
+                        !projectName.equals("Trainee") && !projectName.equals("No Project")) {
+
+                    // Find project by name
+                    Optional<Project> projectOpt = projectRepository.findByProjectName(projectName);
+                    if (projectOpt.isPresent()) {
+                        Long projectId = projectOpt.get().getId();
+
+                        // Check if association already exists
+                        List<EmployeeProject> existing = employeeProjectRepository.findByEmployeeId(employee.getId());
+                        boolean exists = existing.stream()
+                                .anyMatch(ep -> ep.getProjectId().equals(projectId));
+
+                        if (!exists) {
+                            // Create new association
+                            EmployeeProject ep = new EmployeeProject();
+                            ep.setEmployeeId(employee.getId());
+                            ep.setProjectId(projectId);
+                            ep.setAllocationPercentage(new java.math.BigDecimal("100.00"));
+                            ep.setStartDate(
+                                    employee.getStartDate() != null ? java.sql.Date.valueOf(employee.getStartDate())
+                                            : null);
+                            ep.setIsPrimary(true);
+                            employeeProjectRepository.save(ep);
+                            syncCount++;
+                            logger.info("Synced employee {} to project {}", employee.getEmpId(), projectName);
+                        }
+                    }
+                }
+            }
+
+            logger.info("Sync complete. Created {} new associations.", syncCount);
+            return ResponseEntity.ok("Synced " + syncCount + " employee-project associations to junction table.");
+        } catch (Exception e) {
+            logger.error("Error syncing projects", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error syncing: " + e.getMessage());
         }
     }
 
@@ -106,6 +234,7 @@ public class EmployeeController {
             employee.setEmpId(request.getEmpId());
             employee.setName(request.getName());
             employee.setProject(request.getProject());
+            employee.setAgency(request.getAgency());
             employee.setProjectType(request.getProjectType());
             employee.setEmployeeRole(request.getEmployeeRole());
             employee.setBillableStatus(request.getBillableStatus());
@@ -141,6 +270,7 @@ public class EmployeeController {
             employee.setEmpId(request.getEmpId());
             employee.setName(request.getName());
             employee.setProject(request.getProject());
+            employee.setAgency(request.getAgency());
             employee.setProjectType(request.getProjectType());
             employee.setEmployeeRole(request.getEmployeeRole());
             employee.setBillableStatus(request.getBillableStatus());
@@ -226,6 +356,7 @@ public class EmployeeController {
         response.setEmpId(employee.getEmpId());
         response.setName(employee.getName());
         response.setProject(employee.getProject());
+        response.setAgency(employee.getAgency());
         response.setProjectType(employee.getProjectType());
         response.setEmployeeRole(employee.getEmployeeRole());
         response.setBillableStatus(employee.getBillableStatus());

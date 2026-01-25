@@ -1,6 +1,45 @@
 import React, { useState, useEffect } from "react";
 import EmployeeService from "../../services/EmployeeService";
 
+// Styles for checkbox list components
+const checkboxStyles = `
+  .checkbox-list {
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    padding: 12px;
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: white;
+  }
+  
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    transition: background-color 0.2s ease;
+  }
+  
+  .checkbox-item:hover {
+    background-color: #f0f4ff;
+  }
+  
+  .checkbox-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #667eea;
+  }
+  
+  .checkbox-item span {
+    color: #333;
+    font-size: 0.95rem;
+  }
+`;
+
 const Employees = () => {
   const [employees, setEmployees] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -16,7 +55,7 @@ const Employees = () => {
     empId: "",
     name: "",
     project: "",
-    projectType: "",
+    agency: "",
     employeeRole: "",
     billableStatus: null,
     startDate: "",
@@ -154,6 +193,7 @@ const Employees = () => {
         emp.empId.toLowerCase().includes(term) ||
         (emp.name && emp.name.toLowerCase().includes(term)) ||
         (emp.project && emp.project.toLowerCase().includes(term)) ||
+        (emp.agency && emp.agency.toLowerCase().includes(term)) ||
         (emp.employeeRole && emp.employeeRole.toLowerCase().includes(term))
       );
     }
@@ -204,10 +244,11 @@ const Employees = () => {
         empId: newEmployee.empId,
         name: newEmployee.name,
         project: projectNames.join(", "), // For backward compatibility
+        agency: newEmployee.agency,
         projectIds: selectedProjects, // For multiple projects junction table
-        projectType: newEmployee.projectType,
         employeeRole: newEmployee.employeeRole,
         billableStatus: newEmployee.billableStatus,
+        billingType: newEmployee.billableStatus === true ? "Billable" : newEmployee.billableStatus === false ? "Non-Billable" : null,
         startDate: newEmployee.startDate ? newEmployee.startDate : null
       };
       
@@ -215,7 +256,7 @@ const Employees = () => {
       if (response) {
         setEmployees([...employees, response]);
         setShowAddEmployeeModal(false);
-        setNewEmployee({ empId: "", name: "", project: "", projectType: "", employeeRole: "", billableStatus: null, startDate: "", projectIds: [] });
+        setNewEmployee({ empId: "", name: "", project: "", agency: "", projectType: "", employeeRole: "", billableStatus: null, startDate: "", projectIds: [] });
         setSelectedProjects([]);
       }
     } catch (error) {
@@ -263,10 +304,11 @@ const Employees = () => {
         empId: editingEmployee.empId,
         name: editingEmployee.name,
         project: projectNames.join(", "), // For backward compatibility
+        agency: editingEmployee.agency,
         projectIds: editingSelectedProjects, // For multiple projects junction table
-        projectType: editingEmployee.projectType,
         employeeRole: editingEmployee.employeeRole,
         billableStatus: editingEmployee.billableStatus,
+        billingType: editingEmployee.billableStatus === true ? "Billable" : editingEmployee.billableStatus === false ? "Non-Billable" : null,
         startDate: editingEmployee.startDate ? editingEmployee.startDate : null
       };
       
@@ -321,7 +363,7 @@ const Employees = () => {
       empId: `EMP${String(maxId + 1).padStart(3, '0')}`,
       name: "",
       project: "",
-      projectType: "",
+      agency: "",
       employeeRole: "",
       billableStatus: null,
       startDate: ""
@@ -331,7 +373,7 @@ const Employees = () => {
 
   const closeAddEmployeeModal = () => {
     setShowAddEmployeeModal(false);
-    setNewEmployee({ empId: "", name: "", project: "", projectType: "", employeeRole: "", billableStatus: null, startDate: "" });
+    setNewEmployee({ empId: "", name: "", project: "", agency: "", employeeRole: "", billableStatus: null, startDate: "" });
     setSelectedProjects([]);
   };
 
@@ -473,6 +515,9 @@ const Employees = () => {
 
   return (
     <section className="content-section">
+      {/* Inject checkbox styles */}
+      <style>{checkboxStyles}</style>
+      
       {/* Success/Error Message */}
       {message && (
         <div className={`message ${messageType === 'success' ? 'success-message' : 'error-message'}`}>
@@ -509,7 +554,7 @@ const Employees = () => {
           <i className="fas fa-search" style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: '#666', fontSize: '1rem' }}></i>
           <input
             type="text"
-            placeholder="Search by ID, name, project or role..."
+            placeholder="Search by ID, name, project, agency or role..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{ width: '100%', padding: '12px 15px 12px 45px', border: '2px solid #e1e5e9', borderRadius: '8px', fontSize: '0.95rem', fontFamily: 'Montserrat, sans-serif', backgroundColor: 'white', color: '#333', boxSizing: 'border-box', transition: 'border-color 0.3s ease' }}
@@ -587,6 +632,10 @@ const Employees = () => {
                 Project
               </th>
               <th style={{ padding: '1rem', textAlign: 'left', color: 'white', fontWeight: '600' }}>
+                <i className="fas fa-building" style={{ marginRight: '8px' }}></i>
+                Agency
+              </th>
+              <th style={{ padding: '1rem', textAlign: 'left', color: 'white', fontWeight: '600' }}>
                 <i className="fas fa-tag" style={{ marginRight: '8px' }}></i>
                 Type
               </th>
@@ -615,14 +664,14 @@ const Employees = () => {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="9" style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
+                <td colSpan="10" style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
                   <i className="fas fa-spinner fa-spin" style={{ fontSize: '2rem', marginBottom: '1rem' }}></i>
                   <p>Loading employees...</p>
                 </td>
               </tr>
             ) : getFilteredEmployees().length === 0 ? (
               <tr>
-                <td colSpan="9" style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
+                <td colSpan="10" style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
                   <i className="fas fa-users" style={{ fontSize: '2rem', marginBottom: '1rem', color: '#ddd' }}></i>
                   <p>No employees found</p>
                 </td>
@@ -691,6 +740,18 @@ const Employees = () => {
                         </span>
                       )}
                     </div>
+                  </td>
+                  <td style={{ padding: '1rem', color: '#333' }}>
+                    <span style={{ 
+                      background: employee.agency ? '#e3f2fd' : '#f5f5f5',
+                      color: employee.agency ? '#1976d2' : '#999',
+                      padding: '4px 12px',
+                      borderRadius: '20px',
+                      fontSize: '0.85rem',
+                      fontWeight: '500'
+                    }}>
+                      {employee.agency || 'N/A'}
+                    </span>
                   </td>
                   <td style={{ padding: '1rem', color: '#333' }}>
                     <span style={{ 
@@ -815,65 +876,68 @@ const Employees = () => {
                 </div>
 
                 <div className="input-group">
-                  <label htmlFor="project">
-                    <i className="fas fa-project-diagram"></i>
-                    Projects <span className="required">*</span>
-                    <span style={{ fontSize: '0.75rem', color: '#666', marginLeft: '8px', fontWeight: 'normal' }}>
-                      (Hold Ctrl/Cmd to select multiple)
-                    </span>
+                  <label htmlFor="agency">
+                    <i className="fas fa-building"></i>
+                    Agency
                   </label>
-                  <select
-                    id="project"
-                    name="project"
-                    multiple
-                    value={selectedProjects.map(String)}
-                    onChange={handleProjectMultiSelectChange}
-                    required
-                    style={{ 
-                      width: '100%', 
-                      padding: '12px', 
-                      border: '2px solid #e1e5e9', 
-                      borderRadius: '8px',
-                      minHeight: '120px',
-                      backgroundColor: 'white'
-                    }}
-                  >
-                    {projects.length > 0 ? (
-                      projects.map(project => (
-                        <option key={project.id} value={project.id}>
-                          {project.projectName}
-                        </option>
-                      ))
-                    ) : (
-                      <>
-                        <option value="1">Precision Medical Billing</option>
-                        <option value="2">Demo project</option>
-                      </>
-                    )}
-                  </select>
-                  {selectedProjects.length > 0 && (
-                    <div style={{ marginTop: '8px', fontSize: '0.85rem', color: '#22c55e' }}>
-                      <i className="fas fa-check-circle"></i> {selectedProjects.length} project(s) selected
-                    </div>
-                  )}
+                  <input
+                    type="text"
+                    id="agency"
+                    name="agency"
+                    value={newEmployee.agency}
+                    onChange={handleInputChange}
+                    placeholder="Enter agency name"
+                  />
                 </div>
 
                 <div className="input-group">
-                  <label htmlFor="projectType">
-                    <i className="fas fa-tag"></i>
-                    Project Type
+                  <label>
+                    <i className="fas fa-project-diagram"></i>
+                    Projects <span className="required">*</span>
                   </label>
-                  <select
-                    id="projectType"
-                    name="projectType"
-                    value={newEmployee.projectType}
-                    onChange={handleInputChange}
-                    style={{ width: '100%', padding: '12px', border: '2px solid #e1e5e9', borderRadius: '8px' }}
-                  >
-                    <option value="">Select project type</option>
-                    <option value="FTE">FTE</option>
-                    <option value="Contingency">Contingency</option>
-                  </select>
+                  <div className="checkbox-list">
+                    {projects.length > 0 ? (
+                      projects.map(project => (
+                        <label 
+                          key={project.id} 
+                          className="checkbox-item"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedProjects.includes(project.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedProjects([...selectedProjects, project.id]);
+                              } else {
+                                setSelectedProjects(selectedProjects.filter(id => id !== project.id));
+                              }
+                            }}
+                          />
+                          <span>{project.projectName}</span>
+                        </label>
+                      ))
+                    ) : (
+                      <>
+                        <label className="checkbox-item">
+                          <input type="checkbox" />
+                          <span>Precision Medical Billing</span>
+                        </label>
+                        <label className="checkbox-item">
+                          <input type="checkbox" />
+                          <span>Demo project</span>
+                        </label>
+                      </>
+                    )}
+                  </div>
+                  {selectedProjects.length > 0 ? (
+                    <div style={{ marginTop: '8px', fontSize: '0.85rem', color: '#22c55e' }}>
+                      <i className="fas fa-check-circle"></i> {selectedProjects.length} project(s) selected
+                    </div>
+                  ) : (
+                    <div style={{ marginTop: '8px', fontSize: '0.85rem', color: '#dc2626' }}>
+                      <i className="fas fa-exclamation-circle"></i> Please select at least one project
+                    </div>
+                  )}
                 </div>
 
                 <div className="input-group">
@@ -1001,65 +1065,68 @@ const Employees = () => {
                 </div>
 
                 <div className="input-group">
-                  <label htmlFor="editProject">
-                    <i className="fas fa-project-diagram"></i>
-                    Projects <span className="required">*</span>
-                    <span style={{ fontSize: '0.75rem', color: '#666', marginLeft: '8px', fontWeight: 'normal' }}>
-                      (Hold Ctrl/Cmd to select multiple)
-                    </span>
+                  <label htmlFor="editAgency">
+                    <i className="fas fa-building"></i>
+                    Agency
                   </label>
-                  <select
-                    id="editProject"
-                    name="project"
-                    multiple
-                    value={editingSelectedProjects.map(String)}
-                    onChange={handleEditProjectMultiSelectChange}
-                    required
-                    style={{ 
-                      width: '100%', 
-                      padding: '12px', 
-                      border: '2px solid #e1e5e9', 
-                      borderRadius: '8px',
-                      minHeight: '120px',
-                      backgroundColor: 'white'
-                    }}
-                  >
-                    {projects.length > 0 ? (
-                      projects.map(project => (
-                        <option key={project.id} value={project.id}>
-                          {project.projectName}
-                        </option>
-                      ))
-                    ) : (
-                      <>
-                        <option value="1">Precision Medical Billing</option>
-                        <option value="2">Demo project</option>
-                      </>
-                    )}
-                  </select>
-                  {editingSelectedProjects.length > 0 && (
-                    <div style={{ marginTop: '8px', fontSize: '0.85rem', color: '#22c55e' }}>
-                      <i className="fas fa-check-circle"></i> {editingSelectedProjects.length} project(s) selected
-                    </div>
-                  )}
+                  <input
+                    type="text"
+                    id="editAgency"
+                    name="agency"
+                    value={editingEmployee.agency || ''}
+                    onChange={handleEditInputChange}
+                    placeholder="Enter agency name"
+                  />
                 </div>
 
                 <div className="input-group">
-                  <label htmlFor="editProjectType">
-                    <i className="fas fa-tag"></i>
-                    Project Type
+                  <label>
+                    <i className="fas fa-project-diagram"></i>
+                    Projects <span className="required">*</span>
                   </label>
-                  <select
-                    id="editProjectType"
-                    name="projectType"
-                    value={editingEmployee.projectType || ''}
-                    onChange={handleEditInputChange}
-                    style={{ width: '100%', padding: '12px', border: '2px solid #e1e5e9', borderRadius: '8px' }}
-                  >
-                    <option value="">Select project type</option>
-                    <option value="FTE">FTE</option>
-                    <option value="Contingency">Contingency</option>
-                  </select>
+                  <div className="checkbox-list">
+                    {projects.length > 0 ? (
+                      projects.map(project => (
+                        <label 
+                          key={project.id} 
+                          className="checkbox-item"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={editingSelectedProjects.includes(project.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setEditingSelectedProjects([...editingSelectedProjects, project.id]);
+                              } else {
+                                setEditingSelectedProjects(editingSelectedProjects.filter(id => id !== project.id));
+                              }
+                            }}
+                          />
+                          <span>{project.projectName}</span>
+                        </label>
+                      ))
+                    ) : (
+                      <>
+                        <label className="checkbox-item">
+                          <input type="checkbox" />
+                          <span>Precision Medical Billing</span>
+                        </label>
+                        <label className="checkbox-item">
+                          <input type="checkbox" />
+                          <span>Demo project</span>
+                        </label>
+                      </>
+                    )}
+                  </div>
+                  {editingSelectedProjects.length > 0 ? (
+                    <div style={{ marginTop: '8px', fontSize: '0.85rem', color: '#22c55e' }}>
+                      <i className="fas fa-check-circle"></i> {editingSelectedProjects.length} project(s) selected
+                    </div>
+                  ) : (
+                    <div style={{ marginTop: '8px', fontSize: '0.85rem', color: '#dc2626' }}>
+                      <i className="fas fa-exclamation-circle"></i> Please select at least one project
+                    </div>
+                  )}
                 </div>
 
                 <div className="input-group">

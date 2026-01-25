@@ -1,9 +1,6 @@
 package com.invoicingproject.spine.controller;
 
-import com.invoicingproject.spine.dto.AccountLinkingRequest;
 import com.invoicingproject.spine.dto.AuthRequest;
-import com.invoicingproject.spine.dto.AuthResponse;
-import com.invoicingproject.spine.dto.CreateLinkedAccountRequest;
 import com.invoicingproject.spine.service.AuthService;
 import com.invoicingproject.spine.service.JwtService;
 import jakarta.validation.Valid;

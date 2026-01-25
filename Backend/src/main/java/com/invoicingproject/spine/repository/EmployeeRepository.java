@@ -4,6 +4,7 @@ import com.invoicingproject.spine.entity.Employee;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
@@ -18,14 +19,15 @@ public class EmployeeRepository {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    private final RowMapper<Employee> employeeRowMapper = new RowMapper<Employee>() {
+    private final @NonNull RowMapper<Employee> employeeRowMapper = new RowMapper<Employee>() {
         @Override
-        public Employee mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public Employee mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
             Employee employee = new Employee();
             employee.setId(rs.getLong("id"));
             employee.setEmpId(rs.getString("emp_id"));
             employee.setName(rs.getString("name"));
             employee.setProject(rs.getString("project"));
+            employee.setAgency(rs.getString("agency")); // Add agency field mapping
             employee.setProjectType(rs.getString("project_type"));
             employee.setEmployeeRole(rs.getString("employee_role"));
             employee.setBillableStatus(rs.getBoolean("billable_status"));
@@ -105,15 +107,16 @@ public class EmployeeRepository {
 
         if (employee.getId() == null) {
             // Insert
-            String sql = "INSERT INTO employees (emp_id, name, project, project_type, employee_role, billable_status, billing_type, start_date, tenure, created_at, updated_at) "
+            String sql = "INSERT INTO employees (emp_id, name, project, agency, project_type, employee_role, billable_status, billing_type, start_date, tenure, created_at, updated_at) "
                     +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             employee.setCreatedAt(now);
 
             jdbcTemplate.update(sql,
                     employee.getEmpId(),
                     employee.getName(),
                     employee.getProject(),
+                    employee.getAgency(), // Add agency field
                     employee.getProjectType(),
                     employee.getEmployeeRole(),
                     employee.getBillableStatus(),
@@ -128,11 +131,12 @@ public class EmployeeRepository {
             employee.setId(id);
         } else {
             // Update
-            String sql = "UPDATE employees SET emp_id = ?, name = ?, project = ?, project_type = ?, employee_role = ?, billable_status = ?, billing_type = ?, start_date = ?, tenure = ?, updated_at = ? WHERE id = ?";
+            String sql = "UPDATE employees SET emp_id = ?, name = ?, project = ?, agency = ?, project_type = ?, employee_role = ?, billable_status = ?, billing_type = ?, start_date = ?, tenure = ?, updated_at = ? WHERE id = ?";
             jdbcTemplate.update(sql,
                     employee.getEmpId(),
                     employee.getName(),
                     employee.getProject(),
+                    employee.getAgency(), // Add agency field
                     employee.getProjectType(),
                     employee.getEmployeeRole(),
                     employee.getBillableStatus(),
