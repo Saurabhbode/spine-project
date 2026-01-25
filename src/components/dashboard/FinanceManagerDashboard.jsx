@@ -6,6 +6,7 @@ import EmployeeService from "../../services/EmployeeService";
 import Users from "./Users";
 import Employees from "./Employees";
 import FTEInvoice from "../FTEInvoice";
+import InvoiceModal from "../InvoiceModal";
 
 
 const FinanceManagerDashboard = () => {
@@ -242,49 +243,35 @@ const FinanceManagerDashboard = () => {
       return;
     }
     setSelectedProject(project);
-    setEmployeesLoading(true);
+    setShowInvoiceModal(true);
+  };
+
+  // Handle invoice submission from InvoiceModal
+  const handleInvoiceSubmit = async (invoiceData) => {
+    setInvoiceSubmitting(true);
     setInvoiceMessage(null);
-    
+
     try {
-      // Fetch employees working on this project using junction table endpoint first
-      let employees = [];
-      try {
-        employees = await EmployeeService.getEmployeesByProjectFromJunction(project.projectName);
-      } catch (junctionError) {
-        console.warn("Junction endpoint failed, trying backward compatibility endpoint:", junctionError);
-        // Fallback to backward compatibility endpoint
-        try {
-          employees = await EmployeeService.getEmployeesByProject(project.projectName);
-        } catch (fallbackError) {
-          console.warn("Backward compatibility endpoint also failed:", fallbackError);
-        }
-      }
+      // Simulate invoice creation - replace with actual API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      setProjectEmployees(employees);
-      
-      setInvoiceFormData({
-        employeeId: "",
-        employeeName: "",
-        fteValue: "",
-        fteAmount: "",
-        invoiceDate: new Date().toISOString().split('T')[0],
-        description: `Invoice for project: ${project.projectName}`
+      setInvoiceMessage({
+        type: 'success',
+        text: `Invoice for project "${invoiceData.projectName}" created successfully!`
       });
+
+      // Close modal after success
+      setTimeout(() => {
+        setShowInvoiceModal(false);
+        setSelectedProject(null);
+      }, 2000);
     } catch (error) {
-      console.error("Error fetching project employees:", error);
-      setProjectEmployees([]);
-      // Set default empty form even if employees fail to load
-      setInvoiceFormData({
-        employeeId: "",
-        employeeName: "",
-        fteValue: "",
-        fteAmount: "",
-        invoiceDate: new Date().toISOString().split('T')[0],
-        description: `Invoice for project: ${project.projectName}`
+      setInvoiceMessage({
+        type: 'error',
+        text: error.message || 'Failed to create invoice. Please try again.'
       });
     } finally {
-      setEmployeesLoading(false);
-      setShowInvoiceModal(true);
+      setInvoiceSubmitting(false);
     }
   };
 
@@ -342,35 +329,6 @@ const FinanceManagerDashboard = () => {
       }
       return updated;
     });
-  };
-
-  // Handle invoice form submission
-  const handleInvoiceSubmit = async (e) => {
-    e.preventDefault();
-    setInvoiceSubmitting(true);
-    setInvoiceMessage(null);
-
-    try {
-      // Simulate invoice creation
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      setInvoiceMessage({
-        type: 'success',
-        text: `Invoice for project "${selectedProject.projectName}" created successfully!`
-      });
-
-      // Close modal after success
-      setTimeout(() => {
-        closeInvoiceModal();
-      }, 2000);
-    } catch (error) {
-      setInvoiceMessage({
-        type: 'error',
-        text: error.message || 'Failed to create invoice. Please try again.'
-      });
-    } finally {
-      setInvoiceSubmitting(false);
-    }
   };
 
   // Load categories from API
@@ -1734,17 +1692,17 @@ const FinanceManagerDashboard = () => {
       {/* FTE Invoice Modal */}
       {showFTEInvoice && selectedProjectForInvoice && (
         <div className="modal-overlay" onClick={closeFTEInvoice}>
-          <div className="modal fte-invoice-modal" onClick={(e) => e.stopPropagation()} style={{ 
-            maxWidth: '1100px', 
-            maxHeight: '95vh', 
+          <div className="modal fte-invoice-modal" onClick={(e) => e.stopPropagation()} style={{
+            maxWidth: '1100px',
+            maxHeight: '95vh',
             overflow: 'hidden',
-            display: 'flex', 
+            display: 'flex',
             flexDirection: 'column',
             background: '#f7f7f7'
           }}>
             {/* Modal Header */}
-            <div style={{ 
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+            <div style={{
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
               padding: '1rem 1.5rem',
               display: 'flex',
               alignItems: 'center',
@@ -1752,10 +1710,10 @@ const FinanceManagerDashboard = () => {
               color: 'white'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{ 
-                  width: '45px', 
-                  height: '45px', 
-                  background: 'white', 
+                <div style={{
+                  width: '45px',
+                  height: '45px',
+                  background: 'white',
                   borderRadius: '10px',
                   display: 'flex',
                   alignItems: 'center',
@@ -1769,9 +1727,9 @@ const FinanceManagerDashboard = () => {
                   <p style={{ margin: '2px 0 0 0', opacity: 0.9, fontSize: '0.85rem' }}>{selectedProjectForInvoice.projectName}</p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={closeFTEInvoice}
-                style={{ 
+                style={{
                   background: 'rgba(255,255,255,0.2)',
                   border: 'none',
                   color: 'white',
@@ -1790,13 +1748,13 @@ const FinanceManagerDashboard = () => {
             </div>
 
             {/* Modal Body - FTE Invoice Component */}
-            <div style={{ 
-              flex: 1, 
-              overflow: 'auto', 
+            <div style={{
+              flex: 1,
+              overflow: 'auto',
               padding: '0',
               background: '#f7f7f7'
             }}>
-              <FTEInvoice 
+              <FTEInvoice
                 month={fteMonth}
                 year={fteYear}
                 summaryData={fteSummaryData}
@@ -1805,7 +1763,7 @@ const FinanceManagerDashboard = () => {
             </div>
 
             {/* Modal Footer */}
-            <div style={{ 
+            <div style={{
               borderTop: '1px solid #e1e5e9',
               padding: '1rem 1.5rem',
               background: 'white',
@@ -1813,17 +1771,17 @@ const FinanceManagerDashboard = () => {
               justifyContent: 'flex-end',
               gap: '1rem'
             }}>
-              <button 
-                type="button" 
-                className="cancel-btn" 
+              <button
+                type="button"
+                className="cancel-btn"
                 onClick={closeFTEInvoice}
               >
                 <i className="fas fa-times"></i>
                 Close
               </button>
-              <button 
+              <button
                 type="button"
-                className="confirm-btn" 
+                className="confirm-btn"
                 onClick={closeFTEInvoice}
                 style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
               >
@@ -1833,6 +1791,19 @@ const FinanceManagerDashboard = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Invoice Modal with Employee Selection */}
+      {showInvoiceModal && selectedProject && (
+        <InvoiceModal
+          project={selectedProject}
+          onClose={() => {
+            setShowInvoiceModal(false);
+            setSelectedProject(null);
+            setInvoiceMessage(null);
+          }}
+          onSubmit={handleInvoiceSubmit}
+        />
       )}
     </div>
   );
