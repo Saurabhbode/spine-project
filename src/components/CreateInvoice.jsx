@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import '../styles/pages/create-invoice.css';
+import logo from '../assets/3gen logo.png';
 
 /**
  * CreateInvoice Component
@@ -96,7 +97,7 @@ const CreateInvoice = ({
       <div className="create-invoice-header">
         <div className="header-top">
           <div className="company-block">
-            <img src="/3gen logo.png" alt="3gen Logo" className="company-logo" />
+            <img src={logo} alt="3gen Logo" className="company-logo" />
          
           </div>
 
