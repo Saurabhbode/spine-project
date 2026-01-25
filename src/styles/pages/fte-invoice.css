@@ -38,10 +38,10 @@
 }
 
 .fte-table th {
-  background: #ffeb3b;
+  background: var(--color-primary-gradient);
   text-align: left;
   font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
+  color: var(--text-white);
 }
 
 .fte-table .text-right {
@@ -49,13 +49,13 @@
 }
 
 .fte-table .total-row {
-  background: #000000;
+  background: var(--color-primary-gradient);
   color: var(--text-white);
   font-weight: var(--font-weight-bold);
 }
 
 .fte-table .total-row td {
-  border-color: #000000;
+  border-color: var(--color-primary);
 }
 
 /* Hide number input spinners */
