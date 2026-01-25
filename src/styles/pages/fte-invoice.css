@@ -58,6 +58,30 @@
   border-color: #000000;
 }
 
+/* Hide number input spinners */
+.fte-input[type="number"]::-webkit-inner-spin-button,
+.fte-input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.fte-input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* Remove spinners for all number inputs */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .fte-invoice-container {
