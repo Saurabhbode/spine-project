@@ -234,6 +234,7 @@ public class EmployeeController {
             employee.setEmpId(request.getEmpId());
             employee.setName(request.getName());
             employee.setProject(request.getProject());
+            employee.setAgency(request.getAgency());
             employee.setProjectType(request.getProjectType());
             employee.setEmployeeRole(request.getEmployeeRole());
             employee.setBillableStatus(request.getBillableStatus());
@@ -269,6 +270,7 @@ public class EmployeeController {
             employee.setEmpId(request.getEmpId());
             employee.setName(request.getName());
             employee.setProject(request.getProject());
+            employee.setAgency(request.getAgency());
             employee.setProjectType(request.getProjectType());
             employee.setEmployeeRole(request.getEmployeeRole());
             employee.setBillableStatus(request.getBillableStatus());
@@ -354,6 +356,7 @@ public class EmployeeController {
         response.setEmpId(employee.getEmpId());
         response.setName(employee.getName());
         response.setProject(employee.getProject());
+        response.setAgency(employee.getAgency());
         response.setProjectType(employee.getProjectType());
         response.setEmployeeRole(employee.getEmployeeRole());
         response.setBillableStatus(employee.getBillableStatus());

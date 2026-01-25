@@ -1,6 +1,4 @@
 package com.invoicingproject.spine.controller;
-
-import com.invoicingproject.spine.entity.User;
 import com.invoicingproject.spine.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

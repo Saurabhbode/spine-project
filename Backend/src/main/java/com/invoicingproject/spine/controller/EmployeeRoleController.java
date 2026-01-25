@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -57,10 +58,16 @@ public class EmployeeRoleController {
      * Get role by ID
      */
     @GetMapping("/{id}")
-    public ResponseEntity<EmployeeRoleResponse> getRoleById(@PathVariable Long id) {
+    public ResponseEntity<EmployeeRoleResponse> getRoleById(@PathVariable @NonNull Long id) {
         return employeeRoleRepository.findById(id)
-                .map(this::mapToResponse)
-                .map(ResponseEntity::ok)
+                .map(role -> {
+                    EmployeeRoleResponse response = new EmployeeRoleResponse();
+                    response.setId(role.getId() != null ? role.getId() : 0L);
+                    response.setRoleName(role.getRoleName());
+                    response.setDescription(role.getDescription());
+                    response.setIsActive(role.getIsActive());
+                    return ResponseEntity.ok(response);
+                })
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -88,7 +95,8 @@ public class EmployeeRoleController {
      * Update an existing employee role
      */
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateRole(@PathVariable Long id, @Valid @RequestBody EmployeeRoleRequest request) {
+    public ResponseEntity<?> updateRole(@PathVariable @NonNull Long id,
+            @Valid @RequestBody EmployeeRoleRequest request) {
         return employeeRoleRepository.findById(id)
                 .map(existingRole -> {
                     String oldRoleName = existingRole.getRoleName();
@@ -127,7 +135,7 @@ public class EmployeeRoleController {
      * Delete (soft delete - set is_active to false) an employee role
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteRole(@PathVariable Long id) {
+    public ResponseEntity<?> deleteRole(@PathVariable @NonNull Long id) {
         return employeeRoleRepository.findById(id)
                 .map(role -> {
                     role.setIsActive(false);
@@ -141,7 +149,7 @@ public class EmployeeRoleController {
      * Permanently delete an employee role
      */
     @DeleteMapping("/{id}/permanent")
-    public ResponseEntity<?> permanentDeleteRole(@PathVariable Long id) {
+    public ResponseEntity<?> permanentDeleteRole(@PathVariable @NonNull Long id) {
         if (employeeRoleRepository.existsById(id)) {
             employeeRoleRepository.deleteById(id);
             return ResponseEntity.ok(new MessageResponse("Role permanently deleted"));
@@ -149,9 +157,9 @@ public class EmployeeRoleController {
         return ResponseEntity.notFound().build();
     }
 
-    private EmployeeRoleResponse mapToResponse(EmployeeRole role) {
+    private EmployeeRoleResponse mapToResponse(@NonNull EmployeeRole role) {
         EmployeeRoleResponse response = new EmployeeRoleResponse();
-        response.setId(role.getId());
+        response.setId(role.getId() != null ? role.getId() : 0L);
         response.setRoleName(role.getRoleName());
         response.setDescription(role.getDescription());
         response.setIsActive(role.getIsActive());
