@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import authService from "../services/AuthService";
-import "./style.css";
 
 const AccountManagement = () => {
   const navigate = useNavigate();
