@@ -14,6 +14,7 @@ public class Employee {
     private String empId;
     private String name;
     private String project; // Kept for backward compatibility
+    private String agency;
     private String projectType;
     private String employeeRole;
     private Boolean billableStatus;
@@ -73,6 +74,14 @@ public class Employee {
 
     public void setProject(String project) {
         this.project = project;
+    }
+
+    public String getAgency() {
+        return agency;
+    }
+
+    public void setAgency(String agency) {
+        this.agency = agency;
     }
 
     public String getProjectType() {
