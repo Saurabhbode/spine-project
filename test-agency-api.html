@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agency Column API Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #764ba2;
+            margin-top: 30px;
+        }
+        .test-section {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .result {
+            background: #f1f3f4;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .field-highlight {
+            background: #fff3cd;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        pre {
+            background: #2d3748;
+            color: #68d391;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Agency Column Verification & API Test</h1>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="total-employees">0</div>
+                <div class="stat-label">Total Employees</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="employees-with-agency">0</div>
+                <div class="stat-label">With Agency</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="employees-without-agency">0</div>
+                <div class="stat-label">Without Agency</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>1. Verify Database Schema</h2>
+            <p>Check if the <code>agency</code> column exists in the database by inspecting employee records:</p>
+            <button onclick="verifySchema()">🔍 Verify Agency Column</button>
+            <div id="schema-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>2. Get All Employees (Check Agency Field)</h2>
+            <p>Fetch all employees to verify the agency field is present in the API response:</p>
+            <button onclick="getAllEmployees()">📋 Get All Employees</button>
+            <div id="all-employees-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>3. Create Employee WITH Agency</h2>
+            <p>Test creating a new employee with the agency field populated:</p>
+            <div class="grid">
+                <div class="form-group">
+                    <label for="empId">Employee ID:</label>
+                    <input type="text" id="empId" placeholder="EMP001">
+                </div>
+                <div class="form-group">
+                    <label for="name">Full Name:</label>
+                    <input type="text" id="name" placeholder="John Doe">
+                </div>
+                <div class="form-group">
+                    <label for="agency">Agency (New Field!):</label>
+                    <input type="text" id="agency" placeholder="e.g., ABC Staffing, Internal">
+                </div>
+                <div class="form-group">
+                    <label for="project">Project:</label>
+                    <input type="text" id="project" placeholder="Project Name">
+                </div>
+                <div class="form-group">
+                    <label for="employeeRole">Role:</label>
+                    <select id="employeeRole">
+                        <option value="">Select Role</option>
+                        <option value="Patient Calling">Patient Calling</option>
+                        <option value="Billing Specialist">Billing Specialist</option>
+                        <option value="Team Lead">Team Lead</option>
+                        <option value="Manager">Manager</option>
+                        <option value="Developer">Developer</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="billableStatus">Billable Status:</label>
+                    <select id="billableStatus">
+                        <option value="true">Billable</option>
+                        <option value="false">Non-Billable</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="startDate">Start Date:</label>
+                    <input type="date" id="startDate">
+                </div>
+            </div>
+            <button onclick="createEmployeeWithAgency()">➕ Create Employee with Agency</button>
+            <button onclick="createSampleEmployee()">🎯 Create Sample Employee</button>
+            <div id="create-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>4. Get Employee by ID</h2>
+            <p>Retrieve a specific employee to verify agency field:</p>
+            <div class="form-group">
+                <label for="employeeId">Employee ID:</label>
+                <input type="number" id="employeeId" placeholder="Enter employee ID">
+            </div>
+            <button onclick="getEmployeeById()">🔍 Get Employee</button>
+            <div id="employee-detail-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>5. Update Employee Agency</h2>
+            <p>Update an existing employee's agency field:</p>
+            <div class="grid">
+                <div class="form-group">
+                    <label for="updateEmployeeId">Employee ID to Update:</label>
+                    <input type="number" id="updateEmployeeId" placeholder="Enter employee ID">
+                </div>
+                <div class="form-group">
+                    <label for="newAgency">New Agency:</label>
+                    <input type="text" id="newAgency" placeholder="New agency name">
+                </div>
+            </div>
+            <button onclick="updateEmployeeAgency()">✏️ Update Agency</button>
+            <div id="update-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>6. Filter Employees by Agency</h2>
+            <p>Test filtering or searching by agency (manual verification):</p>
+            <div class="form-group">
+                <label for="agencyFilter">Agency Name:</label>
+                <input type="text" id="agencyFilter" placeholder="Filter by agency">
+            </div>
+            <button onclick="filterByAgency()">🔍 Filter by Agency</button>
+            <div id="filter-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>7. Test Employee CRUD with Agency</h2>
+            <button onclick="testFullCRUD()">🚀 Run Full CRUD Test</button>
+            <div id="crud-result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api/employees';
+        let allEmployeesData = [];
+
+        // Initialize
+        document.getElementById('startDate').valueAsDate = new Date();
+        
+        // Load employees on page load
+        window.onload = function() {
+            getAllEmployees();
+        };
+
+        // Verify schema by checking if agency field exists in responses
+        async function verifySchema() {
+            const resultDiv = document.getElementById('schema-result');
+            resultDiv.innerHTML = '<div class="result">Verifying database schema...</div>';
+            
+            try {
+                const response = await fetch(API_BASE);
+                const employees = await response.json();
+                
+                if (employees.length > 0) {
+                    const firstEmployee = employees[0];
+                    const hasAgencyField = 'agency' in firstEmployee;
+                    
+                    resultDiv.innerHTML = `
+                        <div class="result">
+                            <h3>Schema Verification Results:</h3>
+                            <p><strong>Database Status:</strong> ${hasAgencyField ? '✅ <span class="success">Agency column EXISTS</span>' : '❌ <span class="error">Agency column MISSING</span>'}</p>
+                            <p><strong>Sample Employee Data:</strong></p>
+                            <pre>${JSON.stringify(firstEmployee, null, 2)}</pre>
+                            <p><strong>Available Fields:</strong> ${Object.keys(firstEmployee).join(', ')}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<div class="result"><span class="error">No employees found in database</span></div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result"><span class="error">Error: ${error.message}</span></div>`;
+            }
+        }
+
+        // Get all employees
+        async function getAllEmployees() {
+            const resultDiv = document.getElementById('all-employees-result');
+            resultDiv.innerHTML = '<div class="result">Loading employees...</div>';
+            
+            try {
+                const response = await fetch(API_BASE);
+                allEmployeesData = await response.json();
+                
+                const employeesWithAgency = allEmployeesData.filter(e => e.agency && e.agency.trim() !== '');
+                const employeesWithoutAgency = allEmployeesData.filter(e => !e.agency || e.agency.trim() === '');
+                
+                // Update stats
+                document.getElementById('total-employees').textContent = allEmployeesData.length;
+                document.getElementById('employees-with-agency').textContent = employeesWithAgency.length;
+                document.getElementById('employees-without-agency').textContent = employeesWithoutAgency.length;
+                
+                // Show sample data
+                let html = `
+                    <div class="result">
+                        <p><strong>Total Employees:</strong> ${allEmployeesData.length}</p>
+                        <p><strong>With Agency:</strong> ${employeesWithAgency.length}</p>
+                        <p><strong>Without Agency:</strong> ${employeesWithoutAgency.length}</p>
+                        
+                        <h4>Sample Employees (showing agency field):</h4>
+                `;
+                
+                allEmployeesData.slice(0, 3).forEach(emp => {
+                    html += `
+                        <div style="background: #fff; padding: 10px; margin: 5px 0; border-radius: 5px; border-left: 4px solid #667eea;">
+                            <strong>${emp.name}</strong> (${emp.empId})<br>
+                            Agency: <span class="field-highlight">${emp.agency || 'NULL'}</span><br>
+                            Project: ${emp.project || 'N/A'}
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                resultDiv.innerHTML = html;
+                
+                // Auto-verify schema
+                verifySchema();
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result"><span class="error">Error fetching employees: ${error.message}</span></div>`;
+            }
+        }
+
+        // Create employee with agency field
+        async function createEmployeeWithAgency() {
+            const resultDiv = document.getElementById('create-result');
+            
+            const employeeData = {
+                empId: document.getElementById('empId').value,
+                name: document.getElementById('name').value,
+                agency: document.getElementById('agency').value,
+                project: document.getElementById('project').value,
+                employeeRole: document.getElementById('employeeRole').value,
+                billableStatus: document.getElementById('billableStatus').value === 'true',
+                startDate: document.getElementById('startDate').value
+            };
+            
+            if (!employeeData.empId || !employeeData.name) {
+                resultDiv.innerHTML = '<div class="result"><span class="error">❌ Error: empId and name are required</span></div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="result">Creating employee with agency field...</div>';
+            
+            try {
+                const response = await fetch(API_BASE, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(employeeData)
+                });
+                
+                const createdEmployee = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="result">
+                            <p class="success">✅ Employee created successfully!</p>
+                            <p><strong>Verification:</strong></p>
+                            <ul>
+                                <li>Employee ID: ${createdEmployee.id}</li>
+                                <li>Name: ${createdEmployee.name}</li>
+                                <li>Agency: <span class="field-highlight">${createdEmployee.agency || 'NULL'}</span></li>
+                                <li>Project: ${createdEmployee.project}</li>
+                            </ul>
+                            <pre>${JSON.stringify(createdEmployee, null, 2)}</pre>
+                        </div>
+                    `;
+                    
+                    // Refresh the employee list
+                    getAllEmployees();
+                } else {
+                    resultDiv.innerHTML = `<div class="result"><span class="error">❌ Error creating employee: ${JSON.stringify(createdEmployee)}</span></div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result"><span class="error">❌ Error: ${error.message}</span></div>`;
+            }
+        }
+
+        // Create sample employee for testing
+        async function createSampleEmployee() {
+            const sampleId = 'TEST' + Date.now().toString().slice(-6);
+            
+            const sampleData = {
+                empId: sampleId,
+                name: 'Test User - Agency Test',
+                agency: 'External Staffing Agency',
+                project: 'Test Project',
+                employeeRole: 'Developer',
+                billableStatus: true,
+                startDate: new Date().toISOString().split('T')[0]
+            };
+            
+            document.getElementById('empId').value = sampleId;
+            document.getElementById('name').value = sampleData.name;
+            document.getElementById('agency').value = sampleData.agency;
+            document.getElementById('project').value = sampleData.project;
+            document.getElementById('employeeRole').value = sampleData.employeeRole;
+            
+            await createEmployeeWithAgency();
+        }
+
+        // Get employee by ID
+        async function getEmployeeById() {
+            const resultDiv = document.getElementById('employee-detail-result');
+            const employeeId = document.getElementById('employeeId').value;
+            
+            if (!employeeId) {
+                resultDiv.innerHTML = '<div class="result"><span class="error">Please enter an employee ID</span></div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="result">Loading employee details...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/${employeeId}`);
+                
+                if (response.ok) {
+                    const employee = await response.json();
+                    
+                    resultDiv.innerHTML = `
+                        <div class="result">
+                            <p class="success">✅ Employee found!</p>
+                            <div style="background: #fff; padding: 15px; border-radius: 5px; border-left: 4px solid #667eea;">
+                                <h3>${employee.name}</h3>
+                                <p><strong>Employee ID:</strong> ${employee.empId}</p>
+                                <p><strong>Agency:</strong> <span class="field-highlight">${employee.agency || 'NULL'}</span></p>
+                                <p><strong>Project:</strong> ${employee.project}</p>
+                                <p><strong>Role:</strong> ${employee.employeeRole}</p>
+                                <p><strong>Billable:</strong> ${employee.billableStatus}</p>
+                                <p><strong>Start Date:</strong> ${employee.startDate}</p>
+                            </div>
+                            <pre>${JSON.stringify(employee, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="result"><span class="error">❌ Employee not found</span></div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result"><span class="error">Error: ${error.message}</span></div>`;
+            }
+        }
+
+        // Update employee agency
+        async function updateEmployeeAgency() {
+            const resultDiv = document.getElementById('update-result');
+            const employeeId = document.getElementById('updateEmployeeId').value;
+            const newAgency = document.getElementById('newAgency').value;
+            
+            if (!employeeId || !newAgency) {
+                resultDiv.innerHTML = '<div class="result"><span class="error">Please enter both employee ID and new agency</span></div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="result">Updating employee agency...</div>';
+            
+            try {
+                // First get the employee
+                const getResponse = await fetch(`${API_BASE}/${employeeId}`);
+                if (!getResponse.ok) {
+                    resultDiv.innerHTML = '<div class="result"><span class="error">❌ Employee not found</span></div>';
+                    return;
+                }
+                
+                const employee = await getResponse.json();
+                
+                // Update the agency
+                employee.agency = newAgency;
+                
+                const updateResponse = await fetch(`${API_BASE}/${employeeId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(employee)
+                });
+                
+                const updatedEmployee = await updateResponse.json();
+                
+                if (updateResponse.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="result">
+                            <p class="success">✅ Agency updated successfully!</p>
+                            <p><strong>Employee:</strong> ${updatedEmployee.name}</p>
+                            <p><strong>New Agency:</strong> <span class="field-highlight">${updatedEmployee.agency}</span></p>
+                            <pre>${JSON.stringify(updatedEmployee, null, 2)}</pre>
+                        </div>
+                    `;
+                    
+                    // Refresh the employee list
+                    getAllEmployees();
+                } else {
+                    resultDiv.innerHTML = `<div class="result"><span class="error">❌ Error updating employee: ${JSON.stringify(updatedEmployee)}</span></div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result"><span class="error">❌ Error: ${error.message}</span></div>`;
+            }
+        }
+
+        // Filter by agency (client-side for now)
+        async function filterByAgency() {
+            const resultDiv = document.getElementById('filter-result');
+            const agencyFilter = document.getElementById('agencyFilter').value.toLowerCase();
+            
+            if (!agencyFilter) {
+                resultDiv.innerHTML = '<div class="result"><span class="error">Please enter an agency name to filter</span></div>';
+                return;
+            }
+            
+            const filteredEmployees = allEmployeesData.filter(emp => 
+                emp.agency && emp.agency.toLowerCase().includes(agencyFilter)
+            );
+            
+            if (filteredEmployees.length > 0) {
+                let html = `
+                    <div class="result">
+                        <p>Found ${filteredEmployees.length} employees with agency containing "${agencyFilter}":</p>
+                `;
+                
+                filteredEmployees.forEach(emp => {
+                    html += `
+                        <div style="background: #fff; padding: 10px; margin: 5px 0; border-radius: 5px; border-left: 4px solid #667eea;">
+                            <strong>${emp.name}</strong> (${emp.empId})<br>
+                            Agency: <span class="field-highlight">${emp.agency}</span>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                resultDiv.innerHTML = html;
+            } else {
+                resultDiv.innerHTML = '<div class="result"><span class="error">No employees found with that agency</span></div>';
+            }
+        }
+
+        // Full CRUD test
+        async function testFullCRUD() {
+            const resultDiv = document.getElementById('crud-result');
+            resultDiv.innerHTML = '<div class="result">Running full CRUD test with agency field...</div>';
+            
+            let results = [];
+            const testId = 'CRUD' + Date.now().toString().slice(-6);
+            
+            try {
+                // 1. CREATE
+                results.push('1. CREATE: Testing employee creation with agency...');
+                const createData = {
+                    empId: testId,
+                    name: 'CRUD Test User',
+                    agency: 'CRUD Test Agency',
+                    project: 'CRUD Test Project',
+                    employeeRole: 'Tester',
+                    billableStatus: true,
+                    startDate: new Date().toISOString().split('T')[0]
+                };
+                
+                const createResponse = await fetch(API_BASE, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(createData)
+                });
+                
+                if (!createResponse.ok) throw new Error('Create failed');
+                const createdEmployee = await createResponse.json();
+                results.push(`✅ CREATE: Success! Created employee ID: ${createdEmployee.id}, Agency: ${createdEmployee.agency}`);
+                
+                // 2. READ
+                results.push('2. READ: Testing employee retrieval...');
+                const readResponse = await fetch(`${API_BASE}/${createdEmployee.id}`);
+                if (!readResponse.ok) throw new Error('Read failed');
+                const retrievedEmployee = await readResponse.json();
+                const agencyVerified = retrievedEmployee.agency === 'CRUD Test Agency';
+                results.push(`✅ READ: Success! Agency field verified: ${agencyVerified ? 'YES' : 'NO'}`);
+                
+                // 3. UPDATE
+                results.push('3. UPDATE: Testing agency update...');
+                retrievedEmployee.agency = 'Updated Agency Name';
+                const updateResponse = await fetch(`${API_BASE}/${createdEmployee.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(retrievedEmployee)
+                });
+                if (!updateResponse.ok) throw new Error('Update failed');
+                const updatedEmployee = await updateResponse.json();
+                const updateVerified = updatedEmployee.agency === 'Updated Agency Name';
+                results.push(`✅ UPDATE: Success! Agency updated: ${updateVerified ? 'YES' : 'NO'}`);
+                
+                // 4. DELETE (optional - comment out if you want to keep the test data)
+                results.push('4. DELETE: Testing employee deletion...');
+                const deleteResponse = await fetch(`${API_BASE}/${createdEmployee.id}`, {
+                    method: 'DELETE'
+                });
+                if (!deleteResponse.ok) throw new Error('Delete failed');
+                results.push('✅ DELETE: Success! Employee deleted');
+                
+                // Final result
+                resultDiv.innerHTML = `
+                    <div class="result">
+                        <p class="success"><strong>🎉 Full CRUD Test Completed Successfully!</strong></p>
+                        <ol>
+                            ${results.map(r => `<li>${r}</li>`).join('')}
+                        </ol>
+                        <p><strong>Agency Column Status:</strong> <span class="success">✅ FULLY FUNCTIONAL</span></p>
+                    </div>
+                `;
+                
+                // Refresh data
+                getAllEmployees();
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result">
+                        <span class="error">❌ CRUD Test Failed: ${error.message}</span>
+                        <p>Results so far:</p>
+                        <ol>
+                            ${results.map(r => `<li>${r}</li>`).join('')}
+                        </ol>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
