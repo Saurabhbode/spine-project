@@ -275,6 +275,29 @@ const FinanceManagerDashboard = () => {
     }
   };
 
+  // Handle FTE allocation changes (when user edits FTE or remarks)
+  const handleAllocationChange = (updatedAllocationData, updatedSummaryData) => {
+    setFteAllocationData(updatedAllocationData);
+    if (updatedSummaryData) {
+      setFteSummaryData(updatedSummaryData);
+    } else {
+      // Recalculate summary from allocation data
+      const roleTotals = {};
+      updatedAllocationData.forEach(item => {
+        const role = item.process || 'General';
+        if (!roleTotals[role]) {
+          roleTotals[role] = 0;
+        }
+        roleTotals[role] += item.fte;
+      });
+      const newSummaryData = Object.entries(roleTotals).map(([process, fteCount]) => ({
+        process: process,
+        fteCount: fteCount
+      }));
+      setFteSummaryData(newSummaryData);
+    }
+  };
+
   // Open FTE Invoice view
   const openFTEInvoice = async (project) => {
     if (project.projectType !== "FTE") {
@@ -282,13 +305,61 @@ const FinanceManagerDashboard = () => {
       return;
     }
     setSelectedProjectForInvoice(project);
-
-    // TODO: Replace with actual API call to fetch FTE data
-    // For now, initialize with empty data until backend is connected
     setFteMonth('');
     setFteYear(new Date().getFullYear());
-    setFteSummaryData([]);
-    setFteAllocationData([]);
+    
+    // Fetch employees working on this project for FTE allocation
+    try {
+      let projectEmployees = [];
+      try {
+        projectEmployees = await EmployeeService.getEmployeesByProjectFromJunction(project.projectName);
+      } catch (junctionError) {
+        console.warn("Junction endpoint failed, trying backward compatibility endpoint:", junctionError);
+        try {
+          projectEmployees = await EmployeeService.getEmployeesByProject(project.projectName);
+        } catch (fallbackError) {
+          console.warn("Backward compatibility endpoint also failed:", fallbackError);
+        }
+      }
+      
+      // Transform employees to FTE allocation format
+      if (projectEmployees && projectEmployees.length > 0) {
+        const allocationData = projectEmployees.map((emp, index) => ({
+          id: emp.id || index,
+          resourceName: emp.employeeName || emp.name || 'Unknown',
+          employeeRole: emp.employeeRole || emp.role || emp.jobTitle || '-',
+          agencyName: emp.agency || 'N/A',
+          fte: parseFloat(emp.fteValue) || parseFloat(emp.numberOfFTEs) || 0,
+          process: emp.employeeRole || emp.role || emp.jobTitle || 'General',
+          remarks: emp.notes || ''
+        }));
+
+        // Group by employee role for summary
+        const roleTotals = {};
+        allocationData.forEach(item => {
+          const role = item.process || 'General';
+          if (!roleTotals[role]) {
+            roleTotals[role] = 0;
+          }
+          roleTotals[role] += item.fte;
+        });
+
+        const summaryData = Object.entries(roleTotals).map(([process, fteCount]) => ({
+          process: process,
+          fteCount: fteCount
+        }));
+        
+        setFteAllocationData(allocationData);
+        setFteSummaryData(summaryData);
+      } else {
+        setFteAllocationData([]);
+        setFteSummaryData([]);
+      }
+    } catch (error) {
+      console.error("Error fetching employees for FTE invoice:", error);
+      setFteAllocationData([]);
+      setFteSummaryData([]);
+    }
 
     setShowFTEInvoice(true);
   };
@@ -1759,6 +1830,7 @@ const FinanceManagerDashboard = () => {
                 year={fteYear}
                 summaryData={fteSummaryData}
                 allocationData={fteAllocationData}
+                onAllocationChange={handleAllocationChange}
               />
             </div>
 
