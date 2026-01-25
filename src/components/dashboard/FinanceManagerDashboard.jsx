@@ -5,7 +5,7 @@ import ProjectService from "../../services/ProjectService";
 import EmployeeService from "../../services/EmployeeService";
 import Users from "./Users";
 import Employees from "./Employees";
-import FTEInvoice from "../FTEInvoice";
+import CreateInvoice from "../CreateInvoice";
 import InvoiceModal from "../InvoiceModal";
 
 
@@ -124,6 +124,7 @@ const FinanceManagerDashboard = () => {
   const [selectedProject, setSelectedProject] = useState(null);
   const [selectedProjectForInvoice, setSelectedProjectForInvoice] = useState(null);
   const [showFTEInvoice, setShowFTEInvoice] = useState(false);
+  const [showInvoiceHistory, setShowInvoiceHistory] = useState(false);
   const [projectEmployees, setProjectEmployees] = useState([]);
   const [employeesLoading, setEmployeesLoading] = useState(false);
 
@@ -368,6 +369,16 @@ const FinanceManagerDashboard = () => {
   const closeFTEInvoice = () => {
     setShowFTEInvoice(false);
     setSelectedProjectForInvoice(null);
+  };
+
+  // Open Invoice History view
+  const openInvoiceHistory = () => {
+    setShowInvoiceHistory(true);
+  };
+
+  // Close Invoice History view
+  const closeInvoiceHistory = () => {
+    setShowInvoiceHistory(false);
   };
 
   // Close invoice form modal
@@ -1230,21 +1241,21 @@ const FinanceManagerDashboard = () => {
                             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
                               <button
                                 className="project-name-btn"
-                                onClick={() => openInvoiceModal(project)}
+                                onClick={() => openFTEInvoice(project)}
                                 title="Create Invoice"
-                                style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
+                                style={{ background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)' }}
                               >
-                                <i className="fas fa-file-invoice-dollar"></i>
+                                <i className="fas fa-file-invoice"></i>
                                 Create Invoice
                               </button>
                               <button
                                 className="project-name-btn"
-                                onClick={() => openFTEInvoice(project)}
-                                title="Create FTE Invoice"
-                                style={{ background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)' }}
+                                onClick={openInvoiceHistory}
+                                title="Invoice History"
+                                style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }}
                               >
-                                <i className="fas fa-table"></i>
-                                FTE Invoice
+                                <i className="fas fa-history"></i>
+                                Invoice History
                               </button>
                             </div>
                           </td>
@@ -1760,41 +1771,40 @@ const FinanceManagerDashboard = () => {
         </div>
       )}
 
-      {/* FTE Invoice Modal */}
+      {/* Create Invoice Modal */}
       {showFTEInvoice && selectedProjectForInvoice && (
         <div className="modal-overlay" onClick={closeFTEInvoice}>
-          <div className="modal fte-invoice-modal" onClick={(e) => e.stopPropagation()} style={{
-            maxWidth: '1100px',
+          <div className="modal create-invoice-modal" onClick={(e) => e.stopPropagation()} style={{
             maxHeight: '95vh',
             overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',
             background: '#f7f7f7'
           }}>
-            {/* Modal Header */}
+            {/* Modal Header with Close Button */}
             <div style={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'linear-gradient(135deg, #4f66a5 0%, #3d5284 100%)',
               padding: '1rem 1.5rem',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              color: 'white'
+              color: 'white',
+              flexShrink: 0
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <div style={{
-                  width: '45px',
-                  height: '45px',
-                  background: 'white',
+                  width: '42px',
+                  height: '42px',
+                  background: 'rgba(255,255,255,0.2)',
                   borderRadius: '10px',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                  justifyContent: 'center'
                 }}>
-                  <i className="fas fa-table" style={{ fontSize: '1.3rem', color: '#667eea' }}></i>
+                  <i className="fas fa-file-invoice-dollar" style={{ fontSize: '1.2rem' }}></i>
                 </div>
                 <div>
-                  <h2 style={{ margin: 0, fontSize: '1.3rem', fontWeight: '600' }}>FTE Invoice</h2>
+                  <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '600' }}>Create Invoice</h2>
                   <p style={{ margin: '2px 0 0 0', opacity: 0.9, fontSize: '0.85rem' }}>{selectedProjectForInvoice.projectName}</p>
                 </div>
               </div>
@@ -1804,15 +1814,18 @@ const FinanceManagerDashboard = () => {
                   background: 'rgba(255,255,255,0.2)',
                   border: 'none',
                   color: 'white',
-                  width: '36px',
-                  height: '36px',
+                  width: '34px',
+                  height: '34px',
                   borderRadius: '50%',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '1.2rem'
+                  fontSize: '1.1rem',
+                  transition: 'background 0.2s'
                 }}
+                onMouseOver={(e) => e.target.style.background = 'rgba(255,255,255,0.3)'}
+                onMouseOut={(e) => e.target.style.background = 'rgba(255,255,255,0.2)'}
               >
                 <i className="fas fa-times"></i>
               </button>
@@ -1825,9 +1838,10 @@ const FinanceManagerDashboard = () => {
               padding: '0',
               background: '#f7f7f7'
             }}>
-              <FTEInvoice
+              <CreateInvoice
                 month={fteMonth}
                 year={fteYear}
+                projectName={selectedProjectForInvoice.projectName}
                 summaryData={fteSummaryData}
                 allocationData={fteAllocationData}
                 onAllocationChange={handleAllocationChange}
