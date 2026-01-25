@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,9 +25,9 @@ public class UserRepository {
         @Autowired
         private JdbcTemplate jdbcTemplate;
 
-        private final RowMapper<User> userRowMapper = new RowMapper<User>() {
+        private final @NonNull RowMapper<User> userRowMapper = new RowMapper<User>() {
                 @Override
-                public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+                public User mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
                         User user = new User();
                         user.setId(rs.getLong("id"));
                         user.setUsername(rs.getString("username"));
@@ -376,7 +377,6 @@ public class UserRepository {
                                         + ")";
 
                         LocalDateTime now = LocalDateTime.now();
-                        List<Object[]> params = usernames.stream().map(u -> new Object[] { newRole, now }).toList();
 
                         // JdbcTemplate doesn't support batch updates directly for this case, so we'll
                         // do individual updates

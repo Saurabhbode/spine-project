@@ -4,6 +4,7 @@ import com.invoicingproject.spine.entity.ProjectCategory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
@@ -17,9 +18,9 @@ public class ProjectCategoryRepository {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    private final RowMapper<ProjectCategory> categoryRowMapper = new RowMapper<ProjectCategory>() {
+    private final @NonNull RowMapper<ProjectCategory> categoryRowMapper = new RowMapper<ProjectCategory>() {
         @Override
-        public ProjectCategory mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public ProjectCategory mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
             ProjectCategory category = new ProjectCategory();
             category.setId(rs.getLong("id"));
             category.setCategoryName(rs.getString("category_name"));

@@ -1,17 +1,15 @@
 package com.invoicingproject.spine.repository;
 
 import com.invoicingproject.spine.entity.Project;
-import com.invoicingproject.spine.entity.ProjectCategory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,9 +19,9 @@ public class ProjectRepository {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    private final RowMapper<Project> projectRowMapper = new RowMapper<Project>() {
+    private final @NonNull RowMapper<Project> projectRowMapper = new RowMapper<Project>() {
         @Override
-        public Project mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public Project mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
             Project project = new Project();
             project.setId(rs.getLong("id"));
             project.setProjectName(rs.getString("project_name"));

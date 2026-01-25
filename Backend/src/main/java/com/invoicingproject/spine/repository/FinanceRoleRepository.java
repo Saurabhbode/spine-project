@@ -4,6 +4,7 @@ import com.invoicingproject.spine.entity.FinanceRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
@@ -19,9 +20,9 @@ public class FinanceRoleRepository {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    private final RowMapper<FinanceRole> roleRowMapper = new RowMapper<FinanceRole>() {
+    private final @NonNull RowMapper<FinanceRole> roleRowMapper = new RowMapper<FinanceRole>() {
         @Override
-        public FinanceRole mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public FinanceRole mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
             FinanceRole role = new FinanceRole();
             role.setId(rs.getLong("id"));
             role.setRoleName(rs.getString("role_name"));
