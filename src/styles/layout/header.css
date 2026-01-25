@@ -1,0 +1,234 @@
+/**
+ * Header Layout
+ * Top header and navigation bar styles
+ */
+
+/* Top Header */
+.top-header {
+  background: var(--bg-white);
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: var(--header-height);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Header Left Section */
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.header-left h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-left h1 i {
+  color: var(--color-primary);
+}
+
+/* User Department Section */
+.user-department {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Role Badge */
+.role-badge {
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+}
+
+.manager-role {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  color: var(--text-white);
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+}
+
+.user-role {
+  background: linear-gradient(135deg, #4ecdc4, #44a08d);
+  color: var(--text-white);
+}
+
+/* Department Badge */
+.department-badge {
+  display: inline-block;
+  background: var(--color-primary-gradient);
+  color: var(--text-white);
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* User Info Section */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* User Welcome */
+.user-welcome {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* User Avatar */
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-circle);
+  background: var(--color-primary-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-white);
+  font-size: 1.2rem;
+  font-weight: var(--font-weight-semibold);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Username */
+.username {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+/* Header Buttons */
+.account-btn {
+  background: rgba(102, 126, 234, 0.1);
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  color: var(--color-primary);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: var(--font-weight-medium);
+}
+
+.account-btn:hover {
+  background: rgba(102, 126, 234, 0.2);
+  transform: translateY(-1px);
+}
+
+.profile-btn {
+  background: rgba(76, 175, 80, 0.1);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  color: #4caf50;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: var(--font-weight-medium);
+}
+
+.profile-btn:hover {
+  background: rgba(76, 175, 80, 0.2);
+  transform: translateY(-1px);
+}
+
+.logout-btn {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  border: none;
+  color: var(--text-white);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: var(--font-weight-medium);
+}
+
+.logout-btn:hover {
+  background: linear-gradient(135deg, #ee5a52, #dc3545);
+  transform: translateY(-1px);
+}
+
+/* Header Responsive */
+@media (max-width: 768px) {
+  .top-header {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: auto;
+  }
+
+  .header-left {
+    text-align: center;
+    width: 100%;
+  }
+
+  .header-left h1 {
+    font-size: 1.3rem;
+  }
+
+  .user-department {
+    justify-content: center;
+  }
+
+  .user-info {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .user-welcome {
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .user-avatar {
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
+  }
+
+  .username {
+    font-size: 0.85rem;
+  }
+
+  .account-btn,
+  .logout-btn {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+  }
+}
+

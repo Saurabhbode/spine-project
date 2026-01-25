@@ -1,0 +1,80 @@
+/* FTE Invoice Component Styles */
+@import url('../main.css');
+
+.fte-invoice-container {
+  background: var(--bg-light);
+  padding: var(--spacing-xl);
+  font-family: var(--font-family-secondary);
+}
+
+.fte-section {
+  margin-bottom: var(--spacing-3xl);
+}
+
+.fte-section-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-top: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
+}
+
+.fte-table {
+  border-collapse: collapse;
+  width: 100%;
+  background: var(--bg-white);
+  margin-bottom: var(--spacing-2xl);
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.fte-table th,
+.fte-table td {
+  border: 1px solid var(--border-light);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+}
+
+.fte-table th {
+  background: #ffeb3b;
+  text-align: left;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.fte-table .text-right {
+  text-align: right;
+}
+
+.fte-table .total-row {
+  background: #000000;
+  color: var(--text-white);
+  font-weight: var(--font-weight-bold);
+}
+
+.fte-table .total-row td {
+  border-color: #000000;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .fte-invoice-container {
+    padding: var(--spacing-md);
+  }
+
+  .fte-table {
+    font-size: var(--font-size-xs);
+  }
+
+  .fte-table th,
+  .fte-table td {
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+
+  .fte-section-title {
+    font-size: var(--font-size-lg);
+  }
+}
+

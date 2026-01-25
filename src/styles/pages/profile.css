@@ -1,0 +1,1023 @@
+/**
+ * Profile Page Styles
+ * Comprehensive styling for user profile page with tabs, password change, and email editing
+ */
+
+/* ============================================
+   PROFILE CONTAINER & LOADING
+   ============================================ */
+
+.profile-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding: 2rem;
+}
+
+.profile-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  flex-direction: column;
+}
+
+.loading-spinner h2 {
+  color: #666;
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+/* ============================================
+   PROFILE HEADER
+   ============================================ */
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+}
+
+.profile-header h1 {
+  margin: 0;
+  color: #333;
+  font-size: 1.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.profile-header h1 i {
+  color: #667eea;
+}
+
+.back-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: 1px solid transparent;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.back-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.back-btn:hover::before {
+  left: 100%;
+}
+
+.back-btn:hover {
+  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.back-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+}
+
+.back-btn i {
+  font-size: 14px;
+}
+
+/* ============================================
+   PROFILE CONTENT & TABS
+   ============================================ */
+
+.profile-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.profile-tabs {
+  display: flex;
+  background: white;
+  border-radius: 12px 12px 0 0;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  background: #f8f9fa;
+  border: none;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: #666;
+}
+
+.tab-btn:hover {
+  background: #e9ecef;
+  color: #333;
+}
+
+.tab-btn.active {
+  background: #667eea;
+  color: white;
+}
+
+.tab-btn i {
+  font-size: 1rem;
+}
+
+/* ============================================
+   PROFILE SECTION & CARD
+   ============================================ */
+
+.profile-section {
+  background: white;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+  padding: 2rem;
+}
+
+.profile-card {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.profile-card h2 {
+  margin: 0 0 1.5rem 0;
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.profile-card h2 i {
+  color: #667eea;
+}
+
+/* ============================================
+   PROFILE HEADER SECTION (Clean Layout)
+   ============================================ */
+
+.profile-header-section {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  color: white;
+  text-align: left;
+}
+
+.profile-avatar-large {
+  font-size: 4rem;
+  color: white;
+  opacity: 0.9;
+}
+
+.profile-title h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: white;
+  display: block;
+}
+
+.profile-subtitle {
+  margin: 0;
+  font-size: 1rem;
+  opacity: 0.9;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* ============================================
+   BADGES (Department & Role)
+   ============================================ */
+
+.profile-badges-large {
+  margin-bottom: 2rem;
+}
+
+.badge-container {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.department-badge-large,
+.role-badge-large {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.department-badge-large:hover,
+.role-badge-large:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.department-badge-large i,
+.role-badge-large i {
+  font-size: 1.1rem;
+}
+
+/* Department Colors */
+.department-badge-large.finance-dept {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: white;
+}
+
+.department-badge-large.operations-dept {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+}
+
+.department-badge-large.tracesheets-dept {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+}
+
+.department-badge-large.default-dept {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  color: white;
+}
+
+/* Role Colors */
+.role-badge-large.manager-role {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+}
+
+.role-badge-large.user-role {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.role-badge-large.default-role {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  color: white;
+}
+
+/* ============================================
+   PROFILE INFO GRID
+   ============================================ */
+
+.profile-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.info-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.info-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border-color: #667eea;
+}
+
+.info-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.info-content {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.info-content label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
+}
+
+.info-content label i {
+  color: #667eea;
+  width: 16px;
+  text-align: center;
+}
+
+.info-content span {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #333;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* ============================================
+   ACTION CARD (Clickable Cards)
+   ============================================ */
+
+.info-card.action-card {
+  cursor: pointer;
+  border: 2px solid #e0e0e0;
+  position: relative;
+  overflow: hidden;
+}
+
+.info-card.action-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.info-card.action-card:hover::before {
+  left: 100%;
+}
+
+.info-card.action-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+  border-color: #667eea;
+  background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%);
+}
+
+.info-card.action-card .info-icon.action-icon {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.action-text {
+  font-weight: 600 !important;
+  color: #333 !important;
+  font-size: 1.1rem !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  max-width: 100% !important;
+  line-height: 1.4 !important;
+}
+
+.action-subtitle {
+  display: block;
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 0.25rem;
+  font-style: italic;
+  font-weight: 400 !important;
+}
+
+.action-arrow {
+  position: absolute;
+  right: 1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #667eea;
+  font-size: 1.1rem;
+  transition: transform 0.3s ease;
+}
+
+.info-card.action-card:hover .action-arrow {
+  transform: translateY(-50%) translateX(5px);
+}
+
+/* ============================================
+   EMAIL EDITING STYLES
+   ============================================ */
+
+.email-edit-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.current-email-display {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.current-email-display small {
+  display: block;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.email-edit-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #667eea;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+  background-color: white;
+  color: #333;
+}
+
+.email-edit-input:focus {
+  outline: none;
+  border-color: #764ba2;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.email-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.email-text {
+  flex: 1;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #333;
+  word-break: break-all;
+}
+
+.email-edit-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.btn-edit-email,
+.btn-save-email,
+.btn-cancel-edit {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.btn-edit-email {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  font-size: 0.8rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-edit-email:hover {
+  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+  transform: translateY(-1px);
+}
+
+.btn-save-email {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: white;
+  flex: 1;
+  justify-content: center;
+}
+
+.btn-save-email:hover {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  transform: translateY(-1px);
+}
+
+.btn-cancel-edit {
+  background: #6b7280;
+  color: white;
+  flex: 1;
+  justify-content: center;
+}
+
+.btn-cancel-edit:hover {
+  background: #5a6268;
+  transform: translateY(-1px);
+}
+
+/* ============================================
+   PASSWORD CHANGE FORM
+   ============================================ */
+
+.password-form {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.password-form .input-group {
+  margin-bottom: 1.5rem;
+}
+
+.password-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.password-form label i {
+  color: #667eea;
+  width: 16px;
+  text-align: center;
+}
+
+.password-form input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+  background-color: white;
+  color: #333;
+}
+
+.password-form input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.password-form input.error {
+  border-color: #ef4444;
+}
+
+.error-text {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+/* Password Requirements */
+.password-requirements {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+}
+
+.password-requirements h4 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.password-requirements h4 i {
+  color: #667eea;
+}
+
+.password-requirements ul {
+  margin: 0;
+  padding-left: 1.5rem;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.password-requirements li {
+  margin-bottom: 0.25rem;
+}
+
+/* Change Password Button */
+.change-password-btn {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.change-password-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+}
+
+.change-password-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.change-password-btn i {
+  font-size: 1rem;
+}
+
+/* ============================================
+   MESSAGE STYLES
+   ============================================ */
+
+.message {
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid transparent;
+  position: relative;
+  overflow: hidden;
+  background: #f8f9fa;
+  color: #333;
+}
+
+.message::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.message:hover::before {
+  left: 100%;
+}
+
+.message:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.message i {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+/* Success Message */
+.success-message {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
+  color: #ffffff !important;
+  border-left-color: #15803d !important;
+  animation: successPulse 0.6s ease-out;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.success-message:hover {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%) !important;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(34, 197, 94, 0.3);
+}
+
+@keyframes successPulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  50% {
+    transform: scale(1.02) translateY(-5px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.success-message i {
+  animation: bounce 0.6s ease-out;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-8px); }
+  60% { transform: translateY(-4px); }
+}
+
+/* Error Message */
+.error-message {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: #ffffff !important;
+  border-left-color: #b91c1c !important;
+  animation: errorShake 0.5s ease-in-out;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.error-message:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+}
+
+@keyframes errorShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.error-message i {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* ============================================
+   DASHBOARD-SPECIFIC PROFILE STYLES
+   ============================================ */
+
+.finance-dashboard .profile-container {
+  padding: 1rem;
+}
+
+.finance-dashboard .profile-header {
+  background: white;
+  border-radius: 8px;
+}
+
+.finance-dashboard .profile-tabs {
+  border-radius: 8px 8px 0 0;
+}
+
+.finance-dashboard .profile-section {
+  border-radius: 0 0 8px 8px;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+  .profile-container {
+    padding: 1rem;
+  }
+  
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .profile-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .back-btn {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+  
+  .back-btn i {
+    font-size: 13px;
+  }
+  
+  .profile-tabs {
+    flex-direction: column;
+  }
+  
+  .tab-btn {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .profile-section {
+    padding: 1.5rem;
+  }
+  
+  .profile-header-section {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.5rem;
+  }
+  
+  .profile-avatar-large {
+    font-size: 3rem;
+  }
+  
+  .profile-title h2 {
+    font-size: 1.5rem;
+  }
+  
+  .badge-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .profile-info-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .info-card {
+    padding: 1rem;
+  }
+  
+  .info-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+  
+  .info-content span {
+    font-size: 1rem;
+  }
+  
+  .email-display {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .email-text {
+    text-align: center;
+  }
+  
+  .btn-edit-email {
+    align-self: center;
+  }
+  
+  .email-edit-actions {
+    flex-direction: column;
+  }
+  
+  .btn-save-email,
+  .btn-cancel-edit {
+    flex: none;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .password-form {
+    max-width: 100%;
+  }
+  
+  .password-requirements {
+    padding: 0.75rem;
+  }
+  
+  .password-requirements h4 {
+    font-size: 0.9rem;
+  }
+  
+  .password-requirements ul {
+    font-size: 0.85rem;
+    padding-left: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-container {
+    padding: 0.75rem;
+  }
+  
+  .profile-header {
+    padding: 1rem;
+  }
+  
+  .profile-header h1 {
+    font-size: 1.3rem;
+  }
+  
+  .profile-section {
+    padding: 1rem;
+  }
+  
+  .profile-card h2 {
+    font-size: 1.2rem;
+  }
+  
+  .profile-header-section {
+    padding: 1rem;
+  }
+  
+  .profile-title h2 {
+    font-size: 1.2rem;
+  }
+  
+  .department-badge-large,
+  .role-badge-large {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+  
+  .info-card {
+    padding: 0.75rem;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .info-icon {
+    width: 45px;
+    height: 45px;
+    margin-bottom: 0.5rem;
+  }
+  
+  .info-content label {
+    font-size: 0.75rem;
+  }
+  
+  .info-content span {
+    font-size: 0.95rem;
+  }
+  
+  .action-arrow {
+    display: none;
+  }
+  
+  .message {
+    padding: 12px 15px;
+    font-size: 0.9rem;
+  }
+  
+  .message i {
+    font-size: 1rem;
+  }
+}
+

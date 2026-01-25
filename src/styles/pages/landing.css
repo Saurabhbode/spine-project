@@ -1,0 +1,250 @@
+/**
+ * Landing Page Styles
+ * Landing page layout, welcome animation, and department cards
+ */
+
+/* ============================================
+   LANDING CONTAINER
+   ============================================ */
+
+.landing-container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem;
+}
+
+/* ============================================
+   LANDING HEADER
+   ============================================ */
+
+.landing-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  margin-top: 2rem;
+}
+
+.landing-title {
+  font-size: 3rem;
+  color: #333;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.landing-subtitle {
+  font-size: 1.2rem;
+  color: #666;
+  margin-bottom: 0;
+}
+
+/* ============================================
+   WELCOME ANIMATION
+   ============================================ */
+
+.welcome-animation-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.welcome-animation {
+  text-align: center;
+  color: white;
+  animation: slideUp 0.6s ease-out;
+}
+
+.welcome-text {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  opacity: 0.9;
+  animation: fadeIn 0.5s ease-out 0.2s both;
+}
+
+.spine-logo-animated {
+  font-size: 5rem;
+  font-weight: bold;
+  letter-spacing: 0.2em;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #ffffff 0%, #e0e0ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: pulse 2s ease-in-out infinite, glow 1.5s ease-in-out infinite alternate;
+}
+
+.loading-bar {
+  width: 200px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  margin: 2rem auto 0;
+  overflow: hidden;
+}
+
+.loading-progress {
+  height: 100%;
+  width: 0%;
+  background: white;
+  border-radius: 2px;
+  animation: loading 2.5s ease-in-out forwards;
+}
+
+/* Animation Keyframes */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes glow {
+  from { filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3)); }
+  to { filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.6)); }
+}
+
+@keyframes loading {
+  0% { width: 0%; opacity: 1; }
+  70% { width: 100%; opacity: 1; }
+  100% { width: 100%; opacity: 0; }
+}
+
+/* ============================================
+   CARDS CONTAINER
+   ============================================ */
+
+.cards-container {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 1200px;
+  width: 100%;
+  margin-bottom: 3rem;
+}
+
+/* ============================================
+   DEPARTMENT CARD
+   ============================================ */
+
+.department-card {
+  background: white;
+  border-radius: 15px;
+  padding: 2rem;
+  text-align: center;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  min-width: 280px;
+  max-width: 320px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #333;
+}
+
+.department-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 10px 25px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.card-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.8;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: inherit;
+}
+
+.card-description {
+  font-size: 0.95rem;
+  color: inherit;
+  opacity: 0.8;
+  line-height: 1.5;
+}
+
+/* ============================================
+   LANDING FOOTER
+   ============================================ */
+
+.landing-footer {
+  margin-top: auto;
+  text-align: center;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+  .landing-title {
+    font-size: 2.5rem;
+  }
+  
+  .landing-subtitle {
+    font-size: 1.1rem;
+  }
+  
+  .cards-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .department-card {
+    max-width: 400px;
+    width: 100%;
+  }
+  
+  .spine-logo-animated {
+    font-size: 3.5rem;
+  }
+  
+  .welcome-text {
+    font-size: 1.2rem;
+  }
+  
+  .loading-bar {
+    width: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .spine-logo-animated {
+    font-size: 2.5rem;
+    letter-spacing: 0.1em;
+  }
+  
+  .welcome-text {
+    font-size: 1rem;
+  }
+}

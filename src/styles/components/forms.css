@@ -1,0 +1,219 @@
+/**
+ * Form Components
+ * Input fields, labels, selects, and form styling
+ */
+
+/* Input Group Container */
+.input-group {
+  position: relative;
+  margin-bottom: 1.25rem;
+}
+
+/* Form Labels */
+.input-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  font-family: var(--font-family-primary);
+}
+
+.input-group label i {
+  color: var(--color-primary);
+  font-size: 0.9rem;
+  width: 16px;
+  text-align: center;
+}
+
+.input-group label .required {
+  color: var(--color-error);
+  margin-left: 2px;
+}
+
+/* Text Inputs */
+.input-group input[type="text"],
+.input-group input[type="email"],
+.input-group input[type="password"],
+.input-group input[type="number"],
+.input-group input[type="date"],
+.input-group input[type="tel"],
+.input-group input[type="url"] {
+  width: 100%;
+  padding: 15px 50px 15px 15px;
+  border: 2px solid var(--border-light);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+  font-family: var(--font-family-primary);
+  background-color: var(--bg-white);
+  color: var(--text-primary);
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.input-group input::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+/* Textarea */
+.input-group textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid var(--border-light);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+  font-family: var(--font-family-primary);
+  background-color: var(--bg-white);
+  color: var(--text-primary);
+  resize: vertical;
+  min-height: 80px;
+}
+
+.input-group textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.input-group textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+/* Select Dropdown */
+.role-select {
+  width: 100%;
+  padding: 15px 50px 15px 15px;
+  border: 2px solid var(--border-light);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+  background-color: var(--bg-white);
+  cursor: pointer;
+  color: var(--text-primary);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 16px;
+}
+
+.role-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.role-select option[value=""] {
+  color: var(--text-muted) !important;
+  background-color: var(--bg-white) !important;
+}
+
+.role-select option {
+  padding: 10px;
+  background-color: var(--bg-white) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Input Icon */
+.input-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+/* Readonly Input */
+.readonly-input {
+  padding: 0.75rem;
+  border: 2px solid var(--border-light);
+  border-radius: 8px;
+  background: var(--bg-light);
+  color: var(--text-secondary);
+  font-size: 1rem;
+  cursor: not-allowed;
+}
+
+/* Search Box */
+.search-box {
+  position: relative;
+}
+
+.search-box i {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 12px 15px 12px 45px;
+  border: 2px solid var(--border-light);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: var(--font-family-primary);
+  background-color: var(--bg-white);
+  color: var(--text-primary);
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+/* Filter Dropdown */
+.filter-dropdown {
+  min-width: 200px;
+}
+
+/* Form Validation States */
+.password-form input.error {
+  border-color: var(--color-error);
+}
+
+.error-text {
+  color: var(--color-error);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+/* Department Display */
+.department-display {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.department-readonly {
+  flex: 1;
+  padding: 15px 15px;
+  border: 2px solid var(--border-light);
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: var(--bg-light) !important;
+  color: var(--text-secondary) !important;
+  cursor: not-allowed;
+  box-sizing: border-box;
+  font-family: var(--font-family-primary);
+}
+
