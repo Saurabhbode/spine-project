@@ -225,12 +225,12 @@ const CreateInvoice = ({
                         onClick={() => startEditingSummary(item.process)}
                         title="Click to edit Rate"
                       >
-                        {item.rate === '' ? '0.00' : (parseFloat(item.rate) || 0).toFixed(2)}
+                        ${item.rate === '' ? '0.00' : (parseFloat(item.rate) || 0).toFixed(2)}
                       </span>
                     )}
                   </td>
                   <td className="text-right">
-                    {((parseFloat(item.fteCount) || 0) * (parseFloat(item.rate) || 0)).toFixed(2)}
+                    ${((parseFloat(item.fteCount) || 0) * (parseFloat(item.rate) || 0)).toFixed(2)}
                   </td>
                 </tr>
               ))}
@@ -238,7 +238,7 @@ const CreateInvoice = ({
                 <td>{month} {year} - Grand TOTAL</td>
                 <td className="text-right">{totalFTE.toFixed(2)}</td>
                 <td></td>
-                <td className="text-right">{totalAmount.toFixed(2)}</td>
+                <td className="text-right">${totalAmount.toFixed(2)}</td>
               </tr>
             </tbody>
           </table>
@@ -329,19 +329,19 @@ const CreateInvoice = ({
         <div className="fte-summary-section">
           <div className="fte-summary-row">
             <span>Subtotal:</span>
-            <span>{totalAmount.toFixed(2)}</span>
+            <span>${totalAmount.toFixed(2)}</span>
           </div>
           <div className="fte-summary-row">
             <span>Discount:</span>
-            <span>0.00</span>
+            <span>$0.00</span>
           </div>
           <div className="fte-summary-row">
             <span>Tax:</span>
-            <span>0.00</span>
+            <span>$0.00</span>
           </div>
           <div className="fte-grand-total">
             <span>Grand Total:</span>
-            <span>{totalAmount.toFixed(2)}</span>
+            <span>${totalAmount.toFixed(2)}</span>
           </div>
         </div>
 
