@@ -35,11 +35,16 @@ const CreateInvoice = ({
   const [editableData, setEditableData] = useState(allocationData.map(item => ({ ...item })));
   const [editingId, setEditingId] = useState(null);
 
+  // Local state for discount
+  const [discount, setDiscount] = useState(0);
+  const [isEditingDiscount, setIsEditingDiscount] = useState(false);
+
   // Calculate totals
   const totalFTE = editableSummary.reduce((sum, item) => sum + (parseFloat(item.fteCount) || 0), 0);
-  const totalAmount = editableSummary.reduce((sum, item) => {
+  const subtotalAmount = editableSummary.reduce((sum, item) => {
     return sum + ((parseFloat(item.fteCount) || 0) * (parseFloat(item.rate) || 0));
   }, 0);
+  const grandTotal = subtotalAmount - (parseFloat(discount) || 0);
   const totalAllocationFTE = editableData.reduce((sum, item) => sum + (parseFloat(item.fte) || 0), 0);
 
   // Handle rate value change in summary table
@@ -69,6 +74,32 @@ const CreateInvoice = ({
   // Stop editing summary rate
   const stopEditingSummary = () => {
     setEditingSummaryId(null);
+  };
+
+  // Handle discount change
+  const handleDiscountChange = (value) => {
+    if (value === '') {
+      setDiscount('');
+      return;
+    }
+    
+    const newValue = parseFloat(value);
+    if (isNaN(newValue) || newValue < 0) return;
+    
+    setDiscount(newValue);
+  };
+
+  // Start editing discount
+  const startEditingDiscount = () => {
+    setIsEditingDiscount(true);
+  };
+
+  // Stop editing discount
+  const stopEditingDiscount = () => {
+    if (discount === '' || discount === null || discount === undefined) {
+      setDiscount(0);
+    }
+    setIsEditingDiscount(false);
   };
 
   // Handle FTE value change in allocation table
@@ -238,7 +269,7 @@ const CreateInvoice = ({
                 <td>{month} {year} - Grand TOTAL</td>
                 <td className="text-right">{totalFTE.toFixed(2)}</td>
                 <td></td>
-                <td className="text-right">${totalAmount.toFixed(2)}</td>
+                <td className="text-right">${subtotalAmount.toFixed(2)}</td>
               </tr>
             </tbody>
           </table>
@@ -329,11 +360,33 @@ const CreateInvoice = ({
         <div className="fte-summary-section">
           <div className="fte-summary-row">
             <span>Subtotal:</span>
-            <span>${totalAmount.toFixed(2)}</span>
+            <span>${subtotalAmount.toFixed(2)}</span>
           </div>
           <div className="fte-summary-row">
             <span>Discount:</span>
-            <span>$0.00</span>
+            <span className="editable-fte" onClick={startEditingDiscount} title="Click to edit Discount">
+              ${discount === '' ? '0.00' : (parseFloat(discount) || 0).toFixed(2)}
+            </span>
+            {isEditingDiscount && (
+              <input
+                type="number"
+                className="fte-input"
+                style={{ marginLeft: '8px' }}
+                value={discount === '' ? '' : (discount === null || discount === undefined ? 0 : discount)}
+                onChange={(e) => handleDiscountChange(e.target.value)}
+                onBlur={stopEditingDiscount}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    stopEditingDiscount();
+                  }
+                }}
+                autoFocus
+                step="0.01"
+                min="0"
+                placeholder="0.00"
+                onFocus={(e) => e.target.select()}
+              />
+            )}
           </div>
           <div className="fte-summary-row">
             <span>Tax:</span>
@@ -341,7 +394,7 @@ const CreateInvoice = ({
           </div>
           <div className="fte-grand-total">
             <span>Grand Total:</span>
-            <span>${totalAmount.toFixed(2)}</span>
+            <span>${grandTotal.toFixed(2)}</span>
           </div>
         </div>
 
