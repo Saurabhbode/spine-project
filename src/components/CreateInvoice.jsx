@@ -9,6 +9,7 @@ import logo from '../assets/3gen logo.png';
  * 
  * @param {string} month - Month name (e.g., "November")
  * @param {number} year - Year (e.g., 2025)
+ * @param {string} invoiceNumber - Invoice number (auto-generated if not provided)
  * @param {Array} summaryData - FTE summary by process
  * @param {Array} allocationData - Detailed FTE allocation by resource
  * @param {Function} onAllocationChange - Callback when allocation data changes
@@ -16,11 +17,24 @@ import logo from '../assets/3gen logo.png';
 const CreateInvoice = ({ 
   month = '', 
   year = new Date().getFullYear(),
+  invoiceNumber = '',
   projectName = '',
   summaryData = [],
   allocationData = [],
   onAllocationChange
 }) => {
+  // Generate invoice number if not provided
+  const generateInvoiceNumber = () => {
+    const now = new Date();
+    const yearStr = now.getFullYear();
+    const randomNum = Math.floor(1000 + Math.random() * 9000); // 4-digit random number
+    return `INV-${yearStr}-${randomNum}`;
+  };
+
+  // Local state for invoice number
+  const [invoiceNum, setInvoiceNum] = useState(invoiceNumber || generateInvoiceNumber());
+  const [isEditingInvoiceNum, setIsEditingInvoiceNum] = useState(false);
+
   // Local state for editable summary data (rates)
   const [editableSummary, setEditableSummary] = useState(
     summaryData.map(item => ({
@@ -46,6 +60,24 @@ const CreateInvoice = ({
   }, 0);
   const grandTotal = subtotalAmount - (parseFloat(discount) || 0);
   const totalAllocationFTE = editableData.reduce((sum, item) => sum + (parseFloat(item.fte) || 0), 0);
+
+  // Handle invoice number change
+  const handleInvoiceNumChange = (value) => {
+    setInvoiceNum(value);
+  };
+
+  // Start editing invoice number
+  const startEditingInvoiceNum = () => {
+    setIsEditingInvoiceNum(true);
+  };
+
+  // Stop editing invoice number
+  const stopEditingInvoiceNum = () => {
+    if (!invoiceNum || invoiceNum.trim() === '') {
+      setInvoiceNum(generateInvoiceNumber());
+    }
+    setIsEditingInvoiceNum(false);
+  };
 
   // Handle rate value change in summary table
   const handleRateChange = (processName, value) => {
@@ -177,10 +209,32 @@ const CreateInvoice = ({
           </div>
 
           <div className="contact-block">
-            Address<br />
-            AMTP<br />
-            Baner<br />
-            contact@3gen.com
+            INVOICE #<br />
+            {isEditingInvoiceNum ? (
+              <input
+                type="text"
+                className="fte-input"
+                value={invoiceNum}
+                onChange={(e) => handleInvoiceNumChange(e.target.value)}
+                onBlur={stopEditingInvoiceNum}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    stopEditingInvoiceNum();
+                  }
+                }}
+                autoFocus
+                style={{ marginTop: '4px', textAlign: 'left' }}
+              />
+            ) : (
+              <span 
+                className="editable-fte" 
+                onClick={startEditingInvoiceNum}
+                title="Click to edit Invoice Number"
+                style={{ cursor: 'pointer' }}
+              >
+                {invoiceNum}
+              </span>
+            )}
           </div>
         </div>
 
