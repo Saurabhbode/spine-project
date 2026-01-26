@@ -405,10 +405,6 @@ const CreateInvoice = ({
               />
             )}
           </div>
-          <div className="fte-summary-row">
-            <span>Tax:</span>
-            <span>$0.00</span>
-          </div>
           <div className="fte-grand-total">
             <span>Grand Total:</span>
             <span>${grandTotal.toFixed(2)}</span>
