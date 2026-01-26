@@ -1868,6 +1868,15 @@ const FinanceManagerDashboard = () => {
               <button
                 type="button"
                 className="confirm-btn"
+                onClick={() => window.print()}
+                style={{ background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)' }}
+              >
+                <i className="fas fa-print"></i>
+                Print
+              </button>
+              <button
+                type="button"
+                className="confirm-btn"
                 onClick={closeFTEInvoice}
                 style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
               >
