@@ -21,15 +21,57 @@ const CreateInvoice = ({
   allocationData = [],
   onAllocationChange
 }) => {
+  // Local state for editable summary data (rates)
+  const [editableSummary, setEditableSummary] = useState(
+    summaryData.map(item => ({
+      ...item,
+      rate: item.rate !== undefined ? item.rate : 0
+    }))
+  );
+  // Track which summary row is being edited
+  const [editingSummaryId, setEditingSummaryId] = useState(null);
+
   // Local state for editable allocation data
   const [editableData, setEditableData] = useState(allocationData.map(item => ({ ...item })));
   const [editingId, setEditingId] = useState(null);
 
   // Calculate totals
-  const totalFTE = summaryData.reduce((sum, item) => sum + (parseFloat(item.fteCount) || 0), 0);
+  const totalFTE = editableSummary.reduce((sum, item) => sum + (parseFloat(item.fteCount) || 0), 0);
+  const totalAmount = editableSummary.reduce((sum, item) => {
+    return sum + ((parseFloat(item.fteCount) || 0) * (parseFloat(item.rate) || 0));
+  }, 0);
   const totalAllocationFTE = editableData.reduce((sum, item) => sum + (parseFloat(item.fte) || 0), 0);
 
-  // Handle FTE value change
+  // Handle rate value change in summary table
+  const handleRateChange = (processName, value) => {
+    if (value === '') {
+      const updatedSummary = editableSummary.map(item => 
+        item.process === processName ? { ...item, rate: '' } : item
+      );
+      setEditableSummary(updatedSummary);
+      return;
+    }
+    
+    const newValue = parseFloat(value);
+    if (isNaN(newValue) || newValue < 0) return;
+
+    const updatedSummary = editableSummary.map(item => 
+      item.process === processName ? { ...item, rate: newValue } : item
+    );
+    setEditableSummary(updatedSummary);
+  };
+
+  // Start editing summary rate
+  const startEditingSummary = (processName) => {
+    setEditingSummaryId(processName);
+  };
+
+  // Stop editing summary rate
+  const stopEditingSummary = () => {
+    setEditingSummaryId(null);
+  };
+
+  // Handle FTE value change in allocation table
   const handleFteChange = (id, value) => {
     // Allow empty string for editing
     if (value === '') {
@@ -59,10 +101,12 @@ const CreateInvoice = ({
       roleTotals[role] += parseFloat(item.fte) || 0;
     });
     
-    const newSummaryData = summaryData.map(item => ({
+    const newSummaryData = editableSummary.map(item => ({
       ...item,
       fteCount: roleTotals[item.process] || 0
     }));
+    
+    setEditableSummary(newSummaryData);
     
     if (onAllocationChange) {
       onAllocationChange(updatedData, newSummaryData);
@@ -77,7 +121,7 @@ const CreateInvoice = ({
     setEditableData(updatedData);
     
     if (onAllocationChange) {
-      onAllocationChange(updatedData, summaryData);
+      onAllocationChange(updatedData, editableSummary);
     }
   };
 
@@ -137,24 +181,64 @@ const CreateInvoice = ({
               <tr>
                 <th>Process</th>
                 <th className="text-right"># of FTE's</th>
-                <th>Rate/FTE</th>
-                <th>Total</th>
+                <th className="text-right">Rate/FTE</th>
+                <th className="text-right">Total</th>
               </tr>
             </thead>
             <tbody>
-              {summaryData.map((item, index) => (
+              {editableSummary.map((item, index) => (
                 <tr key={`summary-${index}`}>
                   <td>{item.process}</td>
                   <td className="text-right">{(parseFloat(item.fteCount) || 0).toFixed(2)}</td>
-                  <td></td>
-                  <td></td>
+                  <td className="text-right">
+                    {editingSummaryId === item.process ? (
+                      <input
+                        type="number"
+                        className="fte-input"
+                        value={item.rate === '' ? '' : (item.rate === null || item.rate === undefined ? 0 : item.rate)}
+                        onChange={(e) => {
+                          handleRateChange(item.process, e.target.value);
+                        }}
+                        onBlur={() => {
+                          if (item.rate === '' || item.rate === null || item.rate === undefined) {
+                            handleRateChange(item.process, '0');
+                          }
+                          stopEditingSummary();
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            if (item.rate === '' || item.rate === null || item.rate === undefined) {
+                              handleRateChange(item.process, '0');
+                            }
+                            stopEditingSummary();
+                          }
+                        }}
+                        autoFocus
+                        step="0.01"
+                        min="0"
+                        placeholder="0.00"
+                        onFocus={(e) => e.target.select()}
+                      />
+                    ) : (
+                      <span 
+                        className="editable-fte"
+                        onClick={() => startEditingSummary(item.process)}
+                        title="Click to edit Rate"
+                      >
+                        {item.rate === '' ? '0.00' : (parseFloat(item.rate) || 0).toFixed(2)}
+                      </span>
+                    )}
+                  </td>
+                  <td className="text-right">
+                    {((parseFloat(item.fteCount) || 0) * (parseFloat(item.rate) || 0)).toFixed(2)}
+                  </td>
                 </tr>
               ))}
               <tr className="total-row">
                 <td>{month} {year} - Grand TOTAL</td>
                 <td className="text-right">{totalFTE.toFixed(2)}</td>
                 <td></td>
-                <td></td>
+                <td className="text-right">{totalAmount.toFixed(2)}</td>
               </tr>
             </tbody>
           </table>
@@ -245,7 +329,7 @@ const CreateInvoice = ({
         <div className="fte-summary-section">
           <div className="fte-summary-row">
             <span>Subtotal:</span>
-            <span>{totalAllocationFTE.toFixed(2)} FTE</span>
+            <span>{totalAmount.toFixed(2)}</span>
           </div>
           <div className="fte-summary-row">
             <span>Discount:</span>
@@ -257,7 +341,7 @@ const CreateInvoice = ({
           </div>
           <div className="fte-grand-total">
             <span>Grand Total:</span>
-            <span>{totalAllocationFTE.toFixed(2)} FTE</span>
+            <span>{totalAmount.toFixed(2)}</span>
           </div>
         </div>
 
