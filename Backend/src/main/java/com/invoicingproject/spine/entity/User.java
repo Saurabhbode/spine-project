@@ -1,20 +1,48 @@
 package com.invoicingproject.spine.entity;
 
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "users")
 public class User {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "username", nullable = false, unique = true)
     private String username;
+
+    @Column(name = "password", nullable = false)
     private String password;
+
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
+
+    @Column(name = "name", nullable = false)
     private String name;
+
+    @Column(name = "location")
     private String location;
+
+    @Column(name = "department")
     private String department;
+
+    @Column(name = "employee_number")
     private String employeeNumber;
+
+    @Column(name = "role_id")
     private Long roleId; // Foreign key to finance_role table
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id", insertable = false, updatable = false)
     private FinanceRole role; // Reference to the role entity
+
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     public User() {
@@ -87,8 +115,15 @@ public class User {
         }
     }
 
-    public void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 
     // Getters and Setters

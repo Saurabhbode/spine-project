@@ -8,25 +8,63 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Column;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.FetchType;
+
+@Entity
+@Table(name = "employees")
 public class Employee {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "emp_id", nullable = false, unique = true)
     private String empId;
+
+    @Column(name = "name", nullable = false)
     private String name;
-    private String project; // Kept for backward compatibility
+
+    @Column(name = "project") // Kept for backward compatibility
+    private String project;
+
+    @Column(name = "agency")
     private String agency;
+
+    @Column(name = "project_type")
     private String projectType;
+
+    @Column(name = "employee_role")
     private String employeeRole;
+
+    @Column(name = "billable_status")
     private Boolean billableStatus;
+
+    @Column(name = "billing_type")
     private String billingType;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
+    @Column(name = "start_date")
     private LocalDate startDate;
+
+    @Column(name = "tenure")
     private String tenure;
+
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     // Multiple projects relationship via employee_projects junction table
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<EmployeeProject> employeeProjects = new ArrayList<>();
 
     public Employee() {

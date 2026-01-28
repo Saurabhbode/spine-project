@@ -6,6 +6,7 @@ import Signup from './components/Signup';
 import ForgotPassword from './components/ForgotPassword';
 import AccountManagement from './components/AccountManagement';
 import Profile from './components/Profile';
+import InvoiceHistory from './components/InvoiceHistory';
 import FinanceManagerDashboard from './components/dashboard/FinanceManagerDashboard';
 // import FinanceDashboard from './components/dashboard/FinanceDashboard.jsx';
 // import OperationsDashboard from './components/dashboard/OperationsDashboard.jsx';

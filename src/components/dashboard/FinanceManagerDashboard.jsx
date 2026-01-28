@@ -7,6 +7,7 @@ import Users from "./Users";
 import Employees from "./Employees";
 import CreateInvoice from "../CreateInvoice";
 import InvoiceModal from "../InvoiceModal";
+import InvoiceHistory from "../InvoiceHistory";
 
 
 const FinanceManagerDashboard = () => {
@@ -1899,6 +1900,15 @@ const FinanceManagerDashboard = () => {
           }}
           onSubmit={handleInvoiceSubmit}
         />
+      )}
+
+      {/* Invoice History Modal */}
+      {showInvoiceHistory && (
+        <div className="modal-overlay" onClick={closeInvoiceHistory}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '90vw', maxHeight: '90vh' }}>
+            <InvoiceHistory onClose={closeInvoiceHistory} />
+          </div>
+        </div>
       )}
     </div>
   );

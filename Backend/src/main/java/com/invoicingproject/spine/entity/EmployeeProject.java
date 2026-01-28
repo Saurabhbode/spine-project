@@ -5,24 +5,58 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Column;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
+
+@Entity
+@Table(name = "employee_projects")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class EmployeeProject {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "employee_id", nullable = false)
     private Long employeeId;
+
+    @Column(name = "project_id", nullable = false)
     private Long projectId;
+
+    @Column(name = "allocation_percentage", precision = 5, scale = 2)
     private java.math.BigDecimal allocationPercentage;
+
+    @Column(name = "start_date")
     private java.sql.Date startDate;
+
+    @Column(name = "end_date")
     private java.sql.Date endDate;
+
+    @Column(name = "is_primary")
     private Boolean isPrimary;
+
+    @Column(name = "created_at")
     private java.sql.Timestamp createdAt;
+
+    @Column(name = "updated_at")
     private java.sql.Timestamp updatedAt;
 
     // Transient fields for loaded entity data
+    @ManyToOne
+    @JoinColumn(name = "employee_id", insertable = false, updatable = false)
     private Employee employee;
+
+    @ManyToOne
+    @JoinColumn(name = "project_id", insertable = false, updatable = false)
     private Project project;
 
     public Long getId() {

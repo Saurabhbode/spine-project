@@ -2,13 +2,34 @@ package com.invoicingproject.spine.entity;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Column;
+
+@Entity
+@Table(name = "project_category")
 public class ProjectCategory {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "category_name", nullable = false, unique = true)
     private String categoryName;
+
+    @Column(name = "category_description")
     private String categoryDescription;
+
+    @Column(name = "is_active", nullable = false)
     private Boolean isActive;
+
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     public ProjectCategory() {

@@ -1,28 +1,65 @@
 package com.invoicingproject.spine.entity;
 
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
+@Entity
+@Table(name = "projects")
 public class Project {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "project_name", nullable = false)
     private String projectName;
+
+    @Column(name = "project_description")
     private String projectDescription;
+
+    @Column(name = "project_code", nullable = false, unique = true)
     private String projectCode;
+
+    @Column(name = "category_id")
     private Long categoryId;
+
+    @Column(name = "project_type")
     private String projectType; // "Contingency" or "FTE"
+
+    @Column(name = "status")
     private String status;
+
+    @Column(name = "start_date")
     private LocalDate startDate;
+
+    @Column(name = "end_date")
     private LocalDate endDate;
+
+    @Column(name = "budget", precision = 15, scale = 2)
     private BigDecimal budget;
+
+    @Column(name = "location")
     private String location;
+
+    @Column(name = "department")
     private String department;
+
+    @Column(name = "created_by")
     private Long createdBy;
+
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     // Reference to category (not stored in DB, used for display)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", insertable = false, updatable = false)
+    @JsonIgnore
     private ProjectCategory category;
 
     public Project() {
